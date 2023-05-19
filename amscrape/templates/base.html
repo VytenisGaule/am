@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% block title %}
+  <title>TR tool</title>
+  {% endblock %}
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+            integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+            crossorigin="anonymous"
+  />
+  <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+  />
+
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+  <link rel="icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+  <link rel="shortcut icon" href="{% static 'favicon.ico' %}" type="image/x-icon">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}"/>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light static-top mb-5 shadow">
+  <div class="container">
+    <a class="navbar-brand" href="">
+      <svg xmlns="http://www.w3.org/2000/svg" id="svg3523" width="32px" height="32px" viewBox="0 0 300 300" version="1.0">
+        <defs id="defs3525">
+          <linearGradient id="linearGradient2332" y2="515.88" gradientUnits="userSpaceOnUse" x2="311.82" y1="414.34" x1="238.13">
+            <stop id="stop2328" stop-color="#fff" offset="0"/>
+            <stop id="stop2330" stop-color="#7d7d7d" stop-opacity=".98824" offset="1"/>
+          </linearGradient>
+          <linearGradient id="linearGradient2300" y2="265.17" gradientUnits="userSpaceOnUse" x2="97.051" y1="417.04" x1="204.89">
+            <stop id="stop2296" offset="0"/>
+            <stop id="stop2298" stop-color="#fff" stop-opacity="0" offset="1"/>
+          </linearGradient>
+        </defs>
+        <g id="layer1" transform="translate(-232.89 -306.61)">
+          <g id="g2336" transform="matrix(1.0074 0 0 .97321 143.35 58.093)">
+            <path id="path1334" style="color:#000000" d="m237.03 535.89c-34.69-0.38-62.85-28.54-62.85-63.24s28.16-62.86 62.85-63c34.7-0.14 62.86-28.3 62.86-63s-28.16-62.86-62.86-63.56c-66.99-0.71-121.36 56.08-121.36 126.05s54.37 126.75 121.36 126.75z" stroke="#000" stroke-width="4" fill="url(#linearGradient2300)"/>
+            <path id="path2238" style="color:#000000" d="m238.52 283.08c34.7 0.39 62.86 28.55 62.86 63.25 0 34.69-28.16 62.85-62.86 63-34.69 0.14-62.85 28.3-62.85 63 0 34.69 28.16 62.85 62.85 63.56 67 0.7 121.37-56.08 121.37-126.05s-54.37-126.76-121.37-126.76z" stroke="#000" stroke-width="4" fill="url(#linearGradient2332)"/>
+            <g id="g2322">
+              <path id="path2240" d="m-125.81 288.98a7.6383 7.6383 0 1 1 -15.27 0 7.6383 7.6383 0 1 1 15.27 0z" style="color:#000000" transform="matrix(1.8235 0 0 1.8235 481.45 -57.363)"/>
+              <path id="path2304" d="m-125.81 288.98a7.6383 7.6383 0 1 1 -15.27 0 7.6383 7.6383 0 1 1 15.27 0z" style="color:#000000" fill="#fff" transform="matrix(1.8235 0 0 1.8235 481.45 -184.97)"/>
+            </g>
+          </g>
+        </g>
+      </svg>
+      
+      TR</a>
+    <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarResponsive"
+        aria-controls="navbarResponsive"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ml-auto">
+        
+        <li class="nav-item">
+          <a class="nav-link" href="">Vienas</a>
+        </li>
+        
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="">
+            {% if user.player.avatar %}
+            <img src="{{ user.player.avatar.url }}" alt="avatar" width="28" height="28"
+                 class="mr-2 rounded-circle">
+            {% else %}
+            <svg class="bi bi-person" width="1.5em" height="1.5em" viewBox="0 0 16 16" fill="currentColor"
+               xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                    d="M13 14s1 0 1-1-1-4-6-4-6 3-6 4 1 1 1 1h10zm-9.995-.944v-.002.002zM3.022 13h9.956a.274.274 0 00.014-.002l.008-.002c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664a1.05 1.05 0 00.022.004zm9.974.056v-.002.002zM8 7a2 2 0 100-4 2 2 0 000 4zm3-2a3 3 0 11-6 0 3 3 0 016 0z"
+                    clip-rule="evenodd"/>
+              </svg>
+            {% endif %}
+              {{ user.get_username }}</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}?next=/">Logout</a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'register_endpoint' %}?next={{ request.path }}">Register</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'login' %}?next={{ request.path }}">Login</a>
+        </li>
+        {% endif %}
+        
+      </ul>
+      
+        <form class="form-inline my-2 my-lg-0" action="" method="get">
+          <div class="search-container">
+            <input class="form-control mr-sm-2" type="search" placeholder="Find item" aria-label="Search" name="search_text" />
+            <button class="btn btn-outline-info my-2 my-sm-0" type="submit">Search</button>
+          </div>
+        </form>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+<script
+        src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"
+></script>
+<script
+        src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+        integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+        crossorigin="anonymous"
+></script>
+</body>
+</html>
