@@ -47,6 +47,8 @@ class Player(models.Model):
     timezone = models.CharField('timezone', max_length=3, choices=TIME_ZONES, default='EET')
     active_time_start = models.TimeField(default=time(hour=9, minute=0))
     active_time_end = models.TimeField(default=time(hour=23, minute=0))
+    num_visits = models.IntegerField('Visits', default=0, null=True, blank=True)
+    last_visit = models.DateTimeField('Last visit', default=datetime.now(), null=True, blank=True)
 
     class Meta:
         ordering = ['nickname']

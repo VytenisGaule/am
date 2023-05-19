@@ -1,4 +1,5 @@
 from abc import ABC
+from django.utils import timezone
 
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
@@ -16,7 +17,20 @@ from .forms import *
 
 
 def index(request):
-    return render(request, 'index.html')
+    if request.user.is_authenticated and request.user.groups.filter(name='players').exists():
+        player_obj = Player.objects.get(player_user=request.user)
+        num_visits = player_obj.num_visits
+        last_visit = player_obj.last_visit
+        player_obj.num_visits += 1
+        player_obj.last_visit = timezone.now()
+        player_obj.save()
+    else:
+        num_visits = request.session.get('num_visits', 1)
+        last_visit = request.session.get('last_visit')
+        request.session['num_visits'] = num_visits + 1
+        request.session['last_visit'] = timezone.now().isoformat()
+    data = {'num_visits_context': num_visits, 'last_visit_context': last_visit}
+    return render(request, 'index.html', context=data)
 
 
 @csrf_protect
