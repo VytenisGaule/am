@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'amscrape',
+    'amscrape.apps.AmscrapeConfig',
     'tinymce',
     'crispy_forms',
     'crispy_bootstrap4',

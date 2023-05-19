@@ -110,4 +110,3 @@ class GameServer(models.Model):
 
     class Meta:
         ordering = ['name']
-
