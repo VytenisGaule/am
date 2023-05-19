@@ -12,4 +12,5 @@ urlpatterns = urlpatterns + [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', views.register, name="register_endpoint"),
     path('search/', views.search, name='search_endpoint'),
+    path('mysessions/<int:player_id>/new', views.PlayerSessionCreateView.as_view(), name='create_session_endpoint'),
 ]

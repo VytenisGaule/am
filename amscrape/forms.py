@@ -1,7 +1,10 @@
-from .models import Player
+from .models import Player, PlayerSession
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+import requests
+from bs4 import BeautifulSoup
 
 
 class UserUpdateForm(forms.ModelForm):
@@ -19,3 +22,44 @@ class PlayerUpdateForm(forms.ModelForm):
     class Meta:
         model = Player
         fields = ['nickname', 'avatar', 'timezone', 'active_time_start', 'active_time_end']
+
+
+class PlayerSessionCreateForm(forms.ModelForm):
+    login_url = forms.CharField(required=False)
+    username = forms.CharField(required=False)
+    password = forms.CharField(widget=forms.PasswordInput, required=False)
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        self.fields['player'].initial = user.player
+
+    def save(self, commit=True):
+        session = super().save(commit=False)
+        login_url = self.cleaned_data['login_url']
+        username = self.cleaned_data['username']
+        password = self.cleaned_data['password']
+        session_data = self.login(login_url, username, password)
+        session.session_data = session_data
+        if commit:
+            PlayerSession.objects.filter(player=session.player).update(is_active=False)
+            session.save()
+        return session
+
+    @staticmethod
+    def login(login_url, username, password):
+        data = {'username': username, 'password': password, 'login': 'Login'}
+        with requests.Session() as session:
+            session.headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/88.0.4324.190 Safari/537.36'
+            }
+            response = session.post(login_url, data=data)
+            response.raise_for_status()
+            cookies = session.cookies.get_dict()
+            return session
+
+    class Meta:
+        model = PlayerSession
+        fields = ['login_url', 'username', 'password', 'player']
+        widgets = {'player': forms.HiddenInput()}

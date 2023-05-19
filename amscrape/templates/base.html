@@ -189,7 +189,7 @@
       <ul class="navbar-nav ml-auto">
         
         <li class="nav-item">
-          <a class="nav-link" href="">Vienas</a>
+          <a class="nav-link" href="{% url 'create_session_endpoint' request.user.player.id %}">Start Session</a>
         </li>
         
         {% if user.is_authenticated %}

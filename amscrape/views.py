@@ -1,3 +1,5 @@
+from abc import ABC
+
 from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.urls import reverse_lazy
@@ -76,3 +78,25 @@ def search(request):
     """Todo list"""
     query_text = request.GET.get('search_text')
     return None
+
+
+class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
+    model = PlayerSession
+    template_name = 'player_new_session.html'
+    form_class = PlayerSessionCreateForm
+
+    def test_func(self):
+        user = self.request.user
+        player_id = self.kwargs.get('player_id')
+        player = get_object_or_404(Player, id=player_id)
+        return player.player_user == user
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_success_url(self):
+        player_id = self.kwargs.get('player_id')
+        """todo list - pakeisti į aktyvią sesiją"""
+        return reverse('index')

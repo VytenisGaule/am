@@ -68,21 +68,19 @@ class Player(models.Model):
 
 class PlayerSession(models.Model):
     """Django saving session data, but not player login credentials"""
-    """To do - how to get session data, without saving ubb_name, password, SID"""
-    player_id = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
     session_data = models.TextField()
-    expire_date = models.DateTimeField()
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f'Session for Player: {self.player}'
 
     class Meta:
-        ordering = ['-expire_date']
+        ordering = ['is_active']
 
     @property
     def active_session(self):
-        return self.playersession_set.filter(is_active=True).first()
+        return self.playersession_set.order_by('-id').first()
 
 
 class GameServer(models.Model):
