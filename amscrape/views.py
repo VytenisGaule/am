@@ -70,3 +70,9 @@ def profilis(request):
         'profile_form_cntx': profile_form,
     }
     return render(request, "profilis.html", context=data)
+
+
+def search(request):
+    """Todo list"""
+    query_text = request.GET.get('search_text')
+    return None

@@ -11,4 +11,5 @@ urlpatterns = urlpatterns + [
     path('profile/', views.profilis, name='profile_endpoint'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', views.register, name="register_endpoint"),
+    path('search/', views.search, name='search_endpoint'),
 ]
