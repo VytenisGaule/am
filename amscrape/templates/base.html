@@ -193,7 +193,11 @@
             {% if group.name == 'players' %}
         
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'create_session_endpoint' request.user.player.id %}">Start Session</a>
+                <a class="nav-link" href="{% url 'create_session_endpoint' request.user.player.id %}">New Session</a>
+              </li>
+        
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'servers_endpoint' request.user.player.id %}">My servers</a>
               </li>
         
             {% endif %}

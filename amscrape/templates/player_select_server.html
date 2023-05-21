@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+
+{% if gameserver_list %}
+  <style>
+  table {
+    width: 100%;
+  }
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background-color: #4CAF50;
+    color: white;
+  }
+  td {
+    width: 20%;
+  }
+  </style>
+    <form method="post">
+      {% csrf_token %}
+      <table>
+      <thead>
+        <tr>
+          <th>Server name</th>
+          <th>Oversummoning</th>
+          <th>Black market</th>
+          <th>Bots exists</th>
+          <th>Ultimates</th>
+          <th>Permanent Uniques</th>
+          <th>Period</th>
+          <th>Max turns</th>
+          <th>Select</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for server_obj in gameserver_list %}
+          <tr>
+            <td><a href=""> {{ server_obj.name }} </a></td>
+            <td>{{ server_obj.oversummoning }}</td>
+            <td>{{ server_obj.blackmarket }}</td>
+            <td>{{ server_obj.bots }}</td>
+            <td>{{ server_obj.ultimate }}</td>
+            <td>{{ server_obj.permanentuniques }}</td>
+            <td>{{ server_obj.period }}</td>
+            <td>{{ server_obj.maxturns }}</td>
+            <td><input type="checkbox" name="game_server" value="{{ server_obj.id }}"></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Manage selected servers</button>
+  </form>
+{% else %}
+  <p>empty list</p>
+{% endif %}
+
+{% endblock %}

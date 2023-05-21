@@ -1,4 +1,4 @@
-from .models import Player, PlayerSession
+from .models import Player, PlayerSession, GameServer
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -63,3 +63,15 @@ class PlayerSessionCreateForm(forms.ModelForm):
         model = PlayerSession
         fields = ['login_url', 'username', 'password', 'player']
         widgets = {'player': forms.HiddenInput()}
+
+
+class PlayerGameServerSelectForm(forms.ModelForm):
+    game_server = forms.ModelMultipleChoiceField(
+        queryset=GameServer.objects.all(),
+        label='Select Game Server',
+        required=False
+    )
+
+    class Meta:
+        model = Player
+        fields = ['game_server']

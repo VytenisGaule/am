@@ -6,9 +6,36 @@ from django.utils import timezone
 from datetime import datetime, time
 
 
+class GameServer(models.Model):
+    """Server stats, user can edit own preferences whenever it changes"""
+    SERVER_URL_ENDPOINTS = (
+        ('arch', 'https://arch.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+        ('guildwar', 'https://guildwar.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+        ('blitz', 'https://blitz.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+        ('solo', 'https://solo.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+        ('lightning', 'https://lightning.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+        ('beta', 'https://beta.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
+    )
+    name = models.CharField('Server name', max_length=10, choices=SERVER_URL_ENDPOINTS, default='beta')
+    oversummoning = models.BooleanField(default=True, help_text='True for oversummoning enviroment')
+    blackmarket = models.BooleanField(default=True, help_text='True if black market exists')
+    bots = models.BooleanField(default=True, help_text='True if AI exists')
+    ultimate = models.BooleanField(default=True, help_text='True if ultimate spells, units exists')
+    permanentuniques = models.BooleanField(default=True, help_text='True if uniques does not disappear')
+    period = models.DecimalField(decimal_places=0, max_digits=2, help_text='Hours, usually "Damage" status last')
+    maxturns = models.DecimalField(decimal_places=0, max_digits=4, help_text='Max turns available to reach')
+
+    def __str__(self):
+        return f'{self.name}'
+
+    class Meta:
+        ordering = ['name']
+
+
 class Player(models.Model):
     """Django user assigned to control player profile"""
     player_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player')
+    game_server = models.ManyToManyField(GameServer, null=True, blank=True)
     nickname = models.CharField('Nickname', max_length=100)
     avatar = models.ImageField(default='profile_pics/default.png', upload_to='profile_pics')
     TIME_ZONES = (
@@ -83,30 +110,3 @@ class PlayerSession(models.Model):
     @property
     def active_session(self):
         return self.playersession_set.order_by('-id').first()
-
-
-class GameServer(models.Model):
-    """Server stats, user can edit own preferences whenever it changes"""
-    playersession_id = models.ForeignKey(PlayerSession, on_delete=models.CASCADE)
-    SERVER_URL_ENDPOINTS = (
-        ('arch', 'https://arch.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-        ('guildwar', 'https://guildwar.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-        ('blitz', 'https://blitz.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-        ('solo', 'https://solo.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-        ('lightning', 'https://lightning.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-        ('beta', 'https://beta.the-reincarnation.com/cgi-bin/mainmenu.cgi'),
-    )
-    name = models.CharField('Server name', max_length=10, choices=SERVER_URL_ENDPOINTS, default='beta')
-    oversummoning = models.BooleanField(default=True)
-    blackmarket = models.BooleanField(default=True)
-    bots = models.BooleanField(default=True)
-    ultimate = models.BooleanField(default=False)
-    permanentuniques = models.BooleanField(default=True)
-    period = models.DecimalField(decimal_places=0, max_digits=2, help_text='Hours, usually like "Damage" status')
-    maxturns = models.DecimalField(decimal_places=0, max_digits=4, help_text='Max turns available to reach')
-
-    def __str__(self):
-        return f'{self.name}'
-
-    class Meta:
-        ordering = ['name']

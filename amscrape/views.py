@@ -114,3 +114,56 @@ class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.C
         player_id = self.kwargs.get('player_id')
         """todo list - pakeisti į aktyvią sesiją"""
         return reverse('index')
+
+
+class GameServerListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = GameServer
+    template_name = 'player_server_list.html'
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_queryset(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return GameServer.objects.filter(player=player)
+
+
+class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+    template_name = 'player_select_server.html'
+    form_class = PlayerGameServerSelectForm
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['gameserver_list'] = GameServer.objects.all()
+        return context
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.user = self.request.user
+        return form
+
+    def form_valid(self, form):
+        player = get_object_or_404(Player, player_user=self.request.user)
+        selected_servers = form.cleaned_data['game_server'].all()
+        player.game_server.set(selected_servers)
+        return super().form_valid(form)
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            print('form valid')
+            return self.form_valid(form)
+        else:
+            print("Form errors:", form.errors)
+            return self.form_invalid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('servers_endpoint', kwargs={'player_id': self.request.user.player.id})
