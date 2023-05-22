@@ -167,3 +167,72 @@ class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generi
 
     def get_success_url(self):
         return reverse_lazy('servers_endpoint', kwargs={'player_id': self.request.user.player.id})
+
+
+class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    model = GameServer
+    template_name = 'server_detail.html'
+    context_object_name = 'game_server'
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_object(self, queryset=None):
+        player_id = self.kwargs['player_id']
+        gameserver_id = self.kwargs['gameserver_id']
+        game_server = get_object_or_404(GameServer, id=gameserver_id, player__id=player_id)
+        return game_server
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_server = self.get_object()
+        return context
+
+
+class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+    model = TrackTarget
+    template_name = 'player_track_target_list.html'
+    context_object_name = 'track_targets'
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        game_server = GameServer.objects.get(pk=self.kwargs['gameserver_id'])
+        context['game_server'] = game_server
+        return context
+
+    def get_queryset(self):
+        player_id = self.kwargs['player_id']
+        gameserver_id = self.kwargs['gameserver_id']
+        return TrackTarget.objects.filter(
+            Q(kingdomstat__player_id=player_id) & Q(kingdomstat__game_server_id=gameserver_id)
+        )
+
+
+class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
+    model = TrackTarget
+    template_name = 'new_tracking_object.html'
+    form_class = PlayerTrackTargetCreateForm
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        gameserver_id = self.kwargs['gameserver_id']
+        gameserver_obj = get_object_or_404(GameServer, id=gameserver_id)
+        kwargs['gameserver_obj'] = gameserver_obj
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('server_trackers_endpoint', kwargs={
+            'player_id': self.request.user.player.id,
+            'gameserver_id': self.kwargs['gameserver_id']})

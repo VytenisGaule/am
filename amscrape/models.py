@@ -22,8 +22,8 @@ class GameServer(models.Model):
     bots = models.BooleanField(default=True, help_text='True if AI exists')
     ultimate = models.BooleanField(default=True, help_text='True if ultimate spells, units exists')
     permanentuniques = models.BooleanField(default=True, help_text='True if uniques does not disappear')
-    period = models.DecimalField(decimal_places=0, max_digits=2, help_text='Hours, usually "Damage" status last')
-    maxturns = models.DecimalField(decimal_places=0, max_digits=4, help_text='Max turns available to reach')
+    period = models.PositiveIntegerField(default=0, help_text='Hours, usually "Damage" status last')
+    maxturns = models.PositiveIntegerField(default=0, help_text='Max turns available to reach')
 
     def __str__(self):
         return f'{self.name}'
@@ -35,7 +35,7 @@ class GameServer(models.Model):
 class Player(models.Model):
     """Django user assigned to control player profile"""
     player_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player')
-    game_server = models.ManyToManyField(GameServer, null=True, blank=True)
+    game_server = models.ManyToManyField(GameServer, blank=True)
     nickname = models.CharField('Nickname', max_length=100)
     avatar = models.ImageField(default='profile_pics/default.png', upload_to='profile_pics')
     TIME_ZONES = (
@@ -110,3 +110,23 @@ class PlayerSession(models.Model):
     @property
     def active_session(self):
         return self.playersession_set.order_by('-id').first()
+
+
+class TrackTarget(models.Model):
+    keyword = models.CharField(max_length=100, default='', help_text='Keyword of tracking object, case sensitive')
+    link = models.CharField(max_length=200, default='', help_text='url - link where to search for object')
+    iterator_value = models.PositiveIntegerField(default=0, help_text='Index of value, if it is a table, first=0')
+
+    def __str__(self):
+        return self.keyword
+
+
+class KingdomStat(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    game_server = models.ForeignKey(GameServer, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
+    value = models.DecimalField(decimal_places=0, max_digits=12)
+
+    def __str__(self):
+        return f"{self.player} - {self.track_target}"

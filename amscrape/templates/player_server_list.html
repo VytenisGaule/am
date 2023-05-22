@@ -5,7 +5,7 @@
 {% if gameserver_list %}
   {% for server_obj in gameserver_list %}
 
-    <li><a href=""> {{ server_obj.name }} </a>
+    <li><a href="{% url 'server_endpoint' request.user.player.id server_obj.id %}"> {{ server_obj.name }} </a>
     
   {% endfor%}
 {% else %}

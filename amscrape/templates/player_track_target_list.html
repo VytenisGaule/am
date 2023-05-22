@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Tracking list for {{ game_server.name }} server:</h2>
+{% if track_targets_list %}
+  {% for tracking_obj in track_targets_list %}
+
+    <li><a href=""> {{ tracking_obj.name }} </a>
+    
+  {% endfor%}
+{% else %}
+  <p>No tracking objects are set</p>
+{% endif %}
+<hr>
+  <button type="button" onclick="window.location.href='{% url 'new_tracking_object_endpoint' request.user.player.id game_server.id %}'">
+    Add tracking object
+  </button>
+{% endblock %}

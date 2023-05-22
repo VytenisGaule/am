@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ game_server.name }}</h2>
+<p><a href="{% url 'server_trackers_endpoint' player_id=request.user.player.id gameserver_id=game_server.id %}">List of tracked objects</a></p>
+<p><a href="">Change tracking paramaters</a></p>
+<p><a href="">Passive manager</a></p>
+<p><a href="">Active manager</a></p>
+{% endblock %}

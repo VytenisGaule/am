@@ -1,4 +1,4 @@
-from .models import Player, PlayerSession, GameServer
+from .models import Player, PlayerSession, GameServer, TrackTarget
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -75,3 +75,14 @@ class PlayerGameServerSelectForm(forms.ModelForm):
     class Meta:
         model = Player
         fields = ['game_server']
+
+
+class PlayerTrackTargetCreateForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        gameserver_obj = kwargs.pop('gameserver_obj')
+        super().__init__(*args, **kwargs)
+        self.fields['link'].widget.attrs['value'] = f"https://{gameserver_obj.name}.the-reincarnation.com/cgi-bin/"
+
+    class Meta:
+        model = TrackTarget
+        fields = ['keyword', 'link', 'keyword', 'iterator_value']
