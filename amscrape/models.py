@@ -35,7 +35,7 @@ class GameServer(models.Model):
 class Player(models.Model):
     """Django user assigned to control player profile"""
     player_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player')
-    game_server = models.ManyToManyField(GameServer, blank=True)
+    game_server = models.ManyToManyField(GameServer, through='PlayerGameServer', blank=True)
     nickname = models.CharField('Nickname', max_length=100)
     avatar = models.ImageField(default='profile_pics/default.png', upload_to='profile_pics')
     TIME_ZONES = (
@@ -93,6 +93,15 @@ class Player(models.Model):
         user_timezone = pytz.timezone(self.timezone)
         user_time = server_time.astimezone(user_timezone)
         return abs(user_time - server_time)
+
+
+class PlayerGameServer(models.Model):
+    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    game_server = models.ForeignKey(GameServer, on_delete=models.CASCADE)
+    period = models.PositiveIntegerField(default=1700, help_text='Average time to wait between tracking updates')
+
+    def __str__(self):
+        return f"{self.game_server} - {self.period} seconds"
 
 
 class PlayerSession(models.Model):

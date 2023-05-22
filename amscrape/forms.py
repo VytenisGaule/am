@@ -1,4 +1,4 @@
-from .models import Player, PlayerSession, GameServer, TrackTarget
+from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -86,3 +86,13 @@ class PlayerTrackTargetCreateForm(forms.ModelForm):
     class Meta:
         model = TrackTarget
         fields = ['keyword', 'link', 'keyword', 'iterator_value']
+
+
+class PlayerGameServerCreateForm(forms.ModelForm):
+    def __init__(self, *args, gameserver_obj=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.gameserver_obj = gameserver_obj
+
+    class Meta:
+        model = PlayerGameServer
+        fields = ['period']

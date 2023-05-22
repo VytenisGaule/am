@@ -187,7 +187,10 @@ class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        game_server = self.get_object()
+        player_id = self.kwargs['player_id']
+        gameserver_id = self.kwargs['gameserver_id']
+        playergameserver = get_object_or_404(PlayerGameServer, player_id=player_id, game_server_id=gameserver_id)
+        context['playergameserver'] = playergameserver
         return context
 
 
@@ -234,5 +237,28 @@ class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, gener
 
     def get_success_url(self):
         return reverse_lazy('server_trackers_endpoint', kwargs={
+            'player_id': self.request.user.player.id,
+            'gameserver_id': self.kwargs['gameserver_id']})
+
+
+class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+    model = PlayerGameServer
+    template_name = 'game_server_parameters.html'
+    form_class = PlayerGameServerCreateForm
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        gameserver_id = self.kwargs['gameserver_id']
+        gameserver_obj = get_object_or_404(GameServer, id=gameserver_id)
+        kwargs['gameserver_obj'] = gameserver_obj
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('server_endpoint', kwargs={
             'player_id': self.request.user.player.id,
             'gameserver_id': self.kwargs['gameserver_id']})

@@ -6,7 +6,9 @@ urlpatterns = [
     path('', views.index, name='index'),
 ]
 
-"""default user views"""
+"""admin views"""
+
+"""user views"""
 urlpatterns = urlpatterns + [
     path('profile/', views.profilis, name='profile_endpoint'),
     path('accounts/', include('django.contrib.auth.urls')),
@@ -20,4 +22,6 @@ urlpatterns = urlpatterns + [
          name='server_trackers_endpoint'),
     path('myservers/<int:player_id>/<int:gameserver_id>/tracker/new', views.PlayerTrackTargetCreateView.as_view(),
          name='new_tracking_object_endpoint'),
+    path('myservers/parameters/<int:gameserver_id>/<int:pk>/', views.PlayerGameServerUpdateView.as_view(),
+         name='update_server_parameters_endpoint'),
 ]
