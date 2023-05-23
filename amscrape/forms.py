@@ -81,12 +81,14 @@ class PlayerTrackTargetCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         playergameserver_obj = kwargs.pop('playergameserver_obj')
         super().__init__(*args, **kwargs)
+        self.fields['player_game_server'].widget = forms.HiddenInput()
+        self.fields['player_game_server'].initial = playergameserver_obj
         self.fields['link'].widget.attrs[
             'value'] = f"https://{playergameserver_obj.game_server.name}.the-reincarnation.com/cgi-bin/"
 
     class Meta:
         model = TrackTarget
-        fields = ['keyword', 'link', 'keyword', 'iterator_value']
+        fields = ['player_game_server', 'keyword', 'link', 'iterator_value']
 
 
 class PlayerGameServerCreateForm(forms.ModelForm):

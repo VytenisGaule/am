@@ -229,9 +229,8 @@ class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, gener
         return kwargs
 
     def get_success_url(self):
-        return reverse_lazy('server_trackers_endpoint', kwargs={
-            'player_id': self.request.user.player.id,
-            'gameserver_id': self.kwargs['gameserver_id']})
+        return reverse_lazy('server_trackers_endpoint',
+                            kwargs={'player_game_server_id': self.object.player_game_server_id})
 
 
 class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
@@ -246,5 +245,4 @@ class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generi
 
     def get_success_url(self):
         return reverse_lazy('server_endpoint', kwargs={
-            'player_id': self.request.user.player.id,
-            'gameserver_id': self.kwargs['gameserver_id']})
+            'player_game_server_id': self.kwargs['pk']})

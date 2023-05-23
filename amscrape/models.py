@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import JSONField
 from PIL import Image
 from decimal import Decimal
 from django.utils import timezone
@@ -134,8 +135,7 @@ class TrackTarget(models.Model):
 class KingdomStat(models.Model):
     player_game_server = models.ForeignKey(PlayerGameServer, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
-    track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
-    value = models.DecimalField(decimal_places=0, max_digits=12)
+    values = models.JSONField()
 
     def __str__(self):
-        return f"{self.player} - {self.track_target}"
+        return f'{self.timestamp}'
