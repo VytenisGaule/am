@@ -12,7 +12,7 @@
   <p>No tracking objects are set</p>
 {% endif %}
 <hr>
-  <button type="button" onclick="window.location.href='{% url 'new_tracking_object_endpoint' request.user.player.id game_server.id %}'">
+  <button type="button" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server.id %}'">
     Add tracking object
   </button>
 {% endblock %}

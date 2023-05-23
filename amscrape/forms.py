@@ -79,9 +79,10 @@ class PlayerGameServerSelectForm(forms.ModelForm):
 
 class PlayerTrackTargetCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        gameserver_obj = kwargs.pop('gameserver_obj')
+        playergameserver_obj = kwargs.pop('playergameserver_obj')
         super().__init__(*args, **kwargs)
-        self.fields['link'].widget.attrs['value'] = f"https://{gameserver_obj.name}.the-reincarnation.com/cgi-bin/"
+        self.fields['link'].widget.attrs[
+            'value'] = f"https://{playergameserver_obj.game_server.name}.the-reincarnation.com/cgi-bin/"
 
     class Meta:
         model = TrackTarget
@@ -89,10 +90,6 @@ class PlayerTrackTargetCreateForm(forms.ModelForm):
 
 
 class PlayerGameServerCreateForm(forms.ModelForm):
-    def __init__(self, *args, gameserver_obj=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.gameserver_obj = gameserver_obj
-
     class Meta:
         model = PlayerGameServer
         fields = ['period']

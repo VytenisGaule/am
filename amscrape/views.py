@@ -117,7 +117,7 @@ class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.C
 
 
 class GameServerListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
-    model = GameServer
+    model = PlayerGameServer
     template_name = 'player_server_list.html'
 
     def test_func(self):
@@ -128,7 +128,7 @@ class GameServerListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
     def get_queryset(self):
         user = self.request.user
         player = get_object_or_404(Player, player_user=user)
-        return GameServer.objects.filter(player=player)
+        return PlayerGameServer.objects.filter(player=player)
 
 
 class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
@@ -170,9 +170,9 @@ class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generi
 
 
 class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
-    model = GameServer
+    model = PlayerGameServer
     template_name = 'server_detail.html'
-    context_object_name = 'game_server'
+    context_object_name = 'player_game_server'
 
     def test_func(self):
         user = self.request.user
@@ -180,17 +180,13 @@ class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailVi
         return player is not None
 
     def get_object(self, queryset=None):
-        player_id = self.kwargs['player_id']
-        gameserver_id = self.kwargs['gameserver_id']
-        game_server = get_object_or_404(GameServer, id=gameserver_id, player__id=player_id)
-        return game_server
+        player_game_server_id = self.kwargs['player_game_server_id']
+        player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
+        return player_game_server
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        player_id = self.kwargs['player_id']
-        gameserver_id = self.kwargs['gameserver_id']
-        playergameserver = get_object_or_404(PlayerGameServer, player_id=player_id, game_server_id=gameserver_id)
-        context['playergameserver'] = playergameserver
+        context['player_game_server_id'] = self.kwargs['player_game_server_id']
         return context
 
 
@@ -206,16 +202,13 @@ class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        game_server = GameServer.objects.get(pk=self.kwargs['gameserver_id'])
-        context['game_server'] = game_server
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        context['player_game_server'] = player_game_server
         return context
 
     def get_queryset(self):
-        player_id = self.kwargs['player_id']
-        gameserver_id = self.kwargs['gameserver_id']
-        return TrackTarget.objects.filter(
-            Q(kingdomstat__player_id=player_id) & Q(kingdomstat__game_server_id=gameserver_id)
-        )
+        player_game_server_id = self.kwargs['player_game_server_id']
+        return TrackTarget.objects.filter(Q(kingdomstat__player_game_server_id=player_game_server_id))
 
 
 class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
@@ -230,9 +223,9 @@ class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, gener
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        gameserver_id = self.kwargs['gameserver_id']
-        gameserver_obj = get_object_or_404(GameServer, id=gameserver_id)
-        kwargs['gameserver_obj'] = gameserver_obj
+        player_game_server_id = self.kwargs['player_game_server_id']
+        playergameserver_obj = get_object_or_404(PlayerGameServer, id=player_game_server_id)
+        kwargs['playergameserver_obj'] = playergameserver_obj
         return kwargs
 
     def get_success_url(self):
@@ -250,13 +243,6 @@ class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generi
         user = self.request.user
         player = get_object_or_404(Player, player_user=user)
         return player is not None
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        gameserver_id = self.kwargs['gameserver_id']
-        gameserver_obj = get_object_or_404(GameServer, id=gameserver_id)
-        kwargs['gameserver_obj'] = gameserver_obj
-        return kwargs
 
     def get_success_url(self):
         return reverse_lazy('server_endpoint', kwargs={

@@ -131,8 +131,7 @@ class TrackTarget(models.Model):
 
 
 class KingdomStat(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    game_server = models.ForeignKey(GameServer, on_delete=models.CASCADE)
+    player_game_server = models.ForeignKey(PlayerGameServer, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
     value = models.DecimalField(decimal_places=0, max_digits=12)
