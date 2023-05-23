@@ -51,8 +51,8 @@ def register(request):
             """strong password for later stages"""
             # try:
             #     password_validation.validate_password(password, request.user)
-            # except ValidationError as er:
-            #     for error in er:
+            # except ValidationError as e:
+            #     for error in e:
             #         messages.error(request, error)
             #     return redirect('register_endpoint')
 
@@ -208,7 +208,7 @@ class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic
 
     def get_queryset(self):
         player_game_server_id = self.kwargs['player_game_server_id']
-        return TrackTarget.objects.filter(Q(kingdomstat__player_game_server_id=player_game_server_id))
+        return TrackTarget.objects.filter(player_game_server_id=player_game_server_id)
 
 
 class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):

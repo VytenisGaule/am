@@ -122,6 +122,7 @@ class PlayerSession(models.Model):
 
 
 class TrackTarget(models.Model):
+    player_game_server = models.ForeignKey(PlayerGameServer, on_delete=models.CASCADE)
     keyword = models.CharField(max_length=100, default='', help_text='Keyword of tracking object, case sensitive')
     link = models.CharField(max_length=200, default='', help_text='url - link where to search for object')
     iterator_value = models.PositiveIntegerField(default=0, help_text='Index of value, if it is a table, first=0')
