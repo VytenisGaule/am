@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
 import requests
 from bs4 import BeautifulSoup
+import json
 
 
 class UserUpdateForm(forms.ModelForm):
@@ -40,7 +41,9 @@ class PlayerSessionCreateForm(forms.ModelForm):
         username = self.cleaned_data['username']
         password = self.cleaned_data['password']
         session_data = self.login(login_url, username, password)
-        session.session_data = session_data
+        serialized_cookies = requests.utils.dict_from_cookiejar(
+            session_data.cookies)  # Serialize cookies as a dictionary
+        session.session_data = json.dumps(serialized_cookies)  # Serialize the cookies using JSON
         if commit:
             PlayerSession.objects.filter(player=session.player).update(is_active=False)
             session.save()
@@ -56,7 +59,6 @@ class PlayerSessionCreateForm(forms.ModelForm):
             }
             response = session.post(login_url, data=data)
             response.raise_for_status()
-            cookies = session.cookies.get_dict()
             return session
 
     class Meta:

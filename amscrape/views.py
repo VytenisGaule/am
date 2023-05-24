@@ -1,7 +1,6 @@
 from abc import ABC
 from django.utils import timezone
 
-from django.shortcuts import render
 from django.http import HttpResponse, Http404
 from django.urls import reverse_lazy
 from django.shortcuts import render, get_object_or_404, redirect, reverse
@@ -14,6 +13,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from .models import *
 from .forms import *
+from .utils import get_scraped_data
 
 
 def index(request):
@@ -94,6 +94,19 @@ def search(request):
     return None
 
 
+@login_required
+@csrf_protect
+def create_tracking_record(request, player_game_server_id):
+    player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
+    if player_game_server.player.player_user != request.user:
+        raise Http404
+    active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
+    track_targets = TrackTarget.objects.filter(player_game_server=player_game_server)
+    values = get_scraped_data(track_targets, active_session.session_data)
+    kingdom_stat = KingdomStat.objects.create(player_game_server=player_game_server, values=values)
+    return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))
+
+
 class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
     model = PlayerSession
     template_name = 'player_new_session.html'
@@ -112,7 +125,6 @@ class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.C
 
     def get_success_url(self):
         player_id = self.kwargs.get('player_id')
-        """todo list - pakeisti į aktyvią sesiją"""
         return reverse('index')
 
 
@@ -179,16 +191,6 @@ class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailVi
         player = get_object_or_404(Player, player_user=user)
         return player is not None
 
-    def get_object(self, queryset=None):
-        player_game_server_id = self.kwargs['player_game_server_id']
-        player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
-        return player_game_server
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['player_game_server_id'] = self.kwargs['player_game_server_id']
-        return context
-
 
 class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
     model = TrackTarget
@@ -245,4 +247,15 @@ class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generi
 
     def get_success_url(self):
         return reverse_lazy('server_endpoint', kwargs={
-            'player_game_server_id': self.kwargs['pk']})
+            'pk': self.kwargs['pk']})
+
+
+class KingdomStatView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    model = KingdomStat
+    template_name = 'kingdom_statistics.html'
+    context_object_name = 'kingdom_stat'
+
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None

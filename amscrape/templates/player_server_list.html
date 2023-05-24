@@ -4,7 +4,7 @@
 <h2>My server list:</h2>
 {% if playergameserver_list %}
   {% for playergameserver in playergameserver_list %}
-    <li><a href="{% url 'server_endpoint' player_game_server_id=playergameserver.id %}">{{ playergameserver.game_server.name }}</a></li>
+    <li><a href="{% url 'server_endpoint' pk=playergameserver.id %}">{{ playergameserver.game_server.name }}</a></li>
   {% endfor %}
 {% else %}
   <p>No servers in the list</p>

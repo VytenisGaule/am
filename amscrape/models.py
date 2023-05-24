@@ -108,7 +108,7 @@ class PlayerGameServer(models.Model):
 class PlayerSession(models.Model):
     """Django saving session data, but not player login credentials"""
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    session_data = models.TextField()
+    session_data = models.JSONField()
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
