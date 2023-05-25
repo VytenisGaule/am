@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'tinymce',
     'crispy_forms',
     'crispy_bootstrap4',
+    'django_celery_beat',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -111,6 +112,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'lt'
 
 TIME_ZONE = "Europe/Vilnius"
+CELERY_TIMEZONE = 'Europe/Vilnius'
 
 USE_I18N = True
 
@@ -160,3 +162,6 @@ TINYMCE_DEFAULT_CONFIG = {
 }
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
