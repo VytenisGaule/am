@@ -42,8 +42,12 @@ def get_scraped_data(track_targets, session_data):
                         result[str(track_key)] = res
                 except IndexError:
                     print(f"Error: Invalid iterator value for track_key: {track_key}")
-        except RequestException as e:
-            print(f"Error: Failed to fetch data for link: {link}, Error message: {str(e)}")
+        except requests.exceptions.HTTPError as http_err:
+            print(f"Error: HTTP error occurred while fetching data for link: {link}, Error message: {str(http_err)}")
+        except requests.exceptions.RequestException as req_err:
+            print(f"Error: Request exception occurred while fetching data for link: {link}, Error message: {str(req_err)}")
+        except Exception as err:
+            print(f"Error: An unexpected error occurred while fetching data for link: {link}, Error message: {str(err)}")
         if i != link_count - 1:
             time.sleep(random.randint(1, 3))
     json_data = json.dumps(result)

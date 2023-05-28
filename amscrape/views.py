@@ -1,6 +1,6 @@
 from abc import ABC
-from django.utils import timezone
 
+from django.utils import timezone
 from django.http import HttpResponse, Http404
 from django.urls import reverse_lazy
 from django.shortcuts import render, get_object_or_404, redirect, reverse
@@ -14,6 +14,15 @@ from django.contrib import messages
 from .models import *
 from .forms import *
 from .utils import get_scraped_data
+from .tasks import *
+from celery import shared_task
+
+
+class PlayerRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        user = self.request.user
+        player = get_object_or_404(Player, player_user=user)
+        return player is not None
 
 
 def index(request):
@@ -102,21 +111,18 @@ def create_tracking_record(request, player_game_server_id):
         raise Http404
     active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
     track_targets = TrackTarget.objects.filter(player_game_server=player_game_server)
-    values = get_scraped_data(track_targets, active_session.session_data)
-    kingdom_stat = KingdomStat.objects.create(player_game_server=player_game_server, values=values)
+
+    # scrape_url_data.apply_async(
+    #     args=(player_game_server_id, active_session.id, list(track_targets.values_list('id', flat=True))), countdown=60)
+    player_game_server_id, session_id, track_target_ids = player_game_server_id, active_session.id, list(track_targets.values_list('id', flat=True))
+    schedule_scrape_task(60, player_game_server_id, session_id, track_target_ids)
     return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))
 
 
-class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
+class PlayerSessionCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
     model = PlayerSession
     template_name = 'player_new_session.html'
     form_class = PlayerSessionCreateForm
-
-    def test_func(self):
-        user = self.request.user
-        player_id = self.kwargs.get('player_id')
-        player = get_object_or_404(Player, id=player_id)
-        return player.player_user == user
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -128,14 +134,9 @@ class PlayerSessionCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.C
         return reverse('index')
 
 
-class GameServerListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+class GameServerListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
     model = PlayerGameServer
     template_name = 'player_server_list.html'
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
     def get_queryset(self):
         user = self.request.user
@@ -143,14 +144,9 @@ class GameServerListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListVi
         return PlayerGameServer.objects.filter(player=player)
 
 
-class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generic.FormView):
+class PlayerGameServerSelectView(LoginRequiredMixin, PlayerRequiredMixin, generic.FormView):
     template_name = 'player_select_server.html'
     form_class = PlayerGameServerSelectForm
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -181,26 +177,16 @@ class PlayerGameServerSelectView(LoginRequiredMixin, UserPassesTestMixin, generi
         return reverse_lazy('servers_endpoint', kwargs={'player_id': self.request.user.player.id})
 
 
-class ServerDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+class ServerDetailView(LoginRequiredMixin, PlayerRequiredMixin, generic.DetailView):
     model = PlayerGameServer
     template_name = 'server_detail.html'
     context_object_name = 'player_game_server'
 
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
-
-class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic.ListView):
+class PlayerTrackTargetListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
     model = TrackTarget
     template_name = 'player_track_target_list.html'
     context_object_name = 'track_targets'
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -213,15 +199,10 @@ class PlayerTrackTargetListView(LoginRequiredMixin, UserPassesTestMixin, generic
         return TrackTarget.objects.filter(player_game_server_id=player_game_server_id)
 
 
-class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, generic.CreateView):
+class PlayerTrackTargetCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
     model = TrackTarget
     template_name = 'new_tracking_object.html'
     form_class = PlayerTrackTargetCreateForm
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -235,27 +216,17 @@ class PlayerTrackTargetCreateView(LoginRequiredMixin, UserPassesTestMixin, gener
                             kwargs={'player_game_server_id': self.object.player_game_server_id})
 
 
-class PlayerGameServerUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class PlayerGameServerUpdateView(LoginRequiredMixin, PlayerRequiredMixin, generic.UpdateView):
     model = PlayerGameServer
     template_name = 'game_server_parameters.html'
     form_class = PlayerGameServerCreateForm
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
 
     def get_success_url(self):
         return reverse_lazy('server_endpoint', kwargs={
             'pk': self.kwargs['pk']})
 
 
-class KingdomStatView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+class KingdomStatView(LoginRequiredMixin, PlayerRequiredMixin, generic.DetailView):
     model = KingdomStat
     template_name = 'kingdom_statistics.html'
     context_object_name = 'kingdom_stat'
-
-    def test_func(self):
-        user = self.request.user
-        player = get_object_or_404(Player, player_user=user)
-        return player is not None
