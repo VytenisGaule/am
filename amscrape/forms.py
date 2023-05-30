@@ -97,3 +97,7 @@ class PlayerGameServerCreateForm(forms.ModelForm):
     class Meta:
         model = PlayerGameServer
         fields = ['period']
+        widgets = {
+            'period': forms.NumberInput(attrs={'min': 0}),
+        }
+        

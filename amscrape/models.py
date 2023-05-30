@@ -99,10 +99,10 @@ class Player(models.Model):
 class PlayerGameServer(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     game_server = models.ForeignKey(GameServer, on_delete=models.CASCADE)
-    period = models.PositiveIntegerField(default=1700, help_text='Average time to wait between tracking updates')
+    period = models.PositiveIntegerField(default=15, help_text='Average minutes between tracking updates')
 
     def __str__(self):
-        return f"{self.game_server} - {self.period} seconds"
+        return f"{self.game_server} - {self.period} minutes"
 
 
 class PlayerSession(models.Model):

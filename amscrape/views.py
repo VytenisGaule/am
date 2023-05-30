@@ -111,11 +111,9 @@ def create_tracking_record(request, player_game_server_id):
         raise Http404
     active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
     track_targets = TrackTarget.objects.filter(player_game_server=player_game_server)
-
-    # scrape_url_data.apply_async(
-    #     args=(player_game_server_id, active_session.id, list(track_targets.values_list('id', flat=True))), countdown=60)
-    player_game_server_id, session_id, track_target_ids = player_game_server_id, active_session.id, list(track_targets.values_list('id', flat=True))
-    schedule_scrape_task(60, player_game_server_id, session_id, track_target_ids)
+    player_game_server_id, session_id, track_target_ids = player_game_server_id, active_session.id, list(
+        track_targets.values_list('id', flat=True))
+    schedule_scrape_task(player_game_server.period, player_game_server_id, session_id, track_target_ids)
     return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))
 
 
