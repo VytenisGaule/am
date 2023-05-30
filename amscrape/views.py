@@ -13,9 +13,8 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from .models import *
 from .forms import *
-from .utils import get_scraped_data
-from .tasks import *
-from celery import shared_task
+from django_celery_beat.models import IntervalSchedule, PeriodicTask
+import json
 
 
 class PlayerRequiredMixin(UserPassesTestMixin):
@@ -101,20 +100,6 @@ def search(request):
     """Todo list"""
     query_text = request.GET.get('search_text')
     return None
-
-
-@login_required
-@csrf_protect
-def create_tracking_record(request, player_game_server_id):
-    player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
-    if player_game_server.player.player_user != request.user:
-        raise Http404
-    active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
-    track_targets = TrackTarget.objects.filter(player_game_server=player_game_server)
-    player_game_server_id, session_id, track_target_ids = player_game_server_id, active_session.id, list(
-        track_targets.values_list('id', flat=True))
-    schedule_scrape_task(player_game_server.period, player_game_server_id, session_id, track_target_ids)
-    return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))
 
 
 class PlayerSessionCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
@@ -228,3 +213,65 @@ class KingdomStatView(LoginRequiredMixin, PlayerRequiredMixin, generic.DetailVie
     model = KingdomStat
     template_name = 'kingdom_statistics.html'
     context_object_name = 'kingdom_stat'
+
+
+class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+    model = PeriodicTask
+    template_name = 'create_periodic_task.html'
+    form_class = BaseModelForm
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        player_game_server = get_object_or_404(PlayerGameServer, id=self.kwargs['player_game_server_id'])
+        interval, _ = IntervalSchedule.objects.get_or_create(
+            every=player_game_server.period,
+            period=IntervalSchedule.MINUTES
+        )
+        form.instance.interval = interval
+        return form
+
+    def form_valid(self, form):
+        player_game_server = get_object_or_404(PlayerGameServer, id=self.kwargs['player_game_server_id'])
+        active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
+        session_id = active_session.id
+        track_target_ids = list(
+            TrackTarget.objects.filter(player_game_server=player_game_server).values_list('id', flat=True))
+        existing_task = PeriodicTask.objects.filter(name='scrape_url_data').first()
+        interval = form.instance.interval
+        if existing_task:
+            existing_task.interval = interval
+            existing_task.save()
+        else:
+            task = PeriodicTask.objects.create(
+                name='scrape_url_data',
+                task='amscrape.tasks.scrape_url_data',
+                interval=interval,
+                enabled=True,
+            )
+            task.args = json.dumps([player_game_server.id, session_id, track_target_ids])
+            task.save()
+
+        return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
+
+
+class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+    model = PeriodicTask
+    template_name = 'stop_periodic_task.html'
+    form_class = BaseModelForm
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        player_game_server = get_object_or_404(PlayerGameServer, id=self.kwargs['player_game_server_id'])
+        interval, _ = IntervalSchedule.objects.get_or_create(
+            every=player_game_server.period,
+            period=IntervalSchedule.MINUTES
+        )
+        form.instance.interval = interval
+        return form
+
+    def form_valid(self, form):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        existing_task = PeriodicTask.objects.filter(name='scrape_url_data').first()
+        existing_task.enabled = False
+        existing_task.save()
+        return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))

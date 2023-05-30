@@ -26,6 +26,8 @@ urlpatterns = urlpatterns + [
          name='update_server_parameters_endpoint'),
     path('myserver/<int:player_game_server_id>/statistics/<int:pk>/', views.KingdomStatView.as_view(),
          name='kingdom_statistics_record_endpoint'),
-    path('myserver/<int:player_game_server_id>/statistics/create/', views.create_tracking_record,
-         name='create_tracking_record'),
+    path('myserver/<int:player_game_server_id>/statistics/create/', views.PeriodicTaskCreateView.as_view(),
+         name='start_tracking'),
+    path('myserver/<int:player_game_server_id>/statistics/pause/', views.PeriodicTaskPauseView.as_view(),
+         name='stop_tracking'),
 ]

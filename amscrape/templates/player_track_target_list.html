@@ -50,7 +50,10 @@
   <button type="button" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server.id %}'">
     Add tracking object
   </button>
-  <button type="button" onclick="window.location.href='{% url 'create_tracking_record' player_game_server.id %}'">
-    Track
+  <button type="button" onclick="window.location.href='{% url 'start_tracking' player_game_server.id %}'">
+    Start tracking
+  </button>
+  <button type="button" onclick="window.location.href='{% url 'stop_tracking' player_game_server.id %}'">
+    Stop tracking
   </button>
 {% endblock %}

@@ -1,4 +1,5 @@
 from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer
+from django_celery_beat.models import PeriodicTask
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
@@ -100,4 +101,10 @@ class PlayerGameServerCreateForm(forms.ModelForm):
         widgets = {
             'period': forms.NumberInput(attrs={'min': 0}),
         }
-        
+
+
+class BaseModelForm(forms.ModelForm):
+    class Meta:
+        model = PeriodicTask
+        fields = []
+
