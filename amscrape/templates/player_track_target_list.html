@@ -17,7 +17,7 @@
     font-weight: bold;
   }
 </style>
-<h2>Tracking list for
+<h2>Tracked objects for
   <a href="{% url 'server_endpoint' pk=player_game_server.id %}">
     {{ player_game_server.game_server.name }}
   </a> server:
@@ -28,6 +28,7 @@
       <th>Keyword</th>
       <th>Link</th>
       <th>Iterator Value</th>
+      <th>Remove</th>
     </tr>
   </thead>
   <tbody>
@@ -37,6 +38,13 @@
           <td>{{ tracking_obj.keyword }}</td>
           <td>{{ tracking_obj.link }}</td>
           <td>{{ tracking_obj.iterator_value }}</td>
+          <td>
+            <form method="POST" action="{% url 'server_trackers_endpoint' player_game_server_id=player_game_server.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="delete_pk" value="{{ tracking_obj.pk }}">
+              <button type="submit" class="delete-button btn-outline-danger">Delete</button>
+            </form>
+          </td>
         </tr>
       {% endfor %}
     {% else %}
@@ -47,13 +55,13 @@
   </tbody>
 </table>
 <hr>
-  <button type="button" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server.id %}'">
+  <button type="button" class="btn-outline-dark" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server.id %}'">
     Add tracking object
   </button>
-  <button type="button" onclick="window.location.href='{% url 'start_tracking' player_game_server.id %}'">
+  <button type="button" class="btn-outline-success" onclick="window.location.href='{% url 'start_tracking' player_game_server.id %}'">
     Start tracking
   </button>
-  <button type="button" onclick="window.location.href='{% url 'stop_tracking' player_game_server.id %}'">
+  <button type="button" class="btn-outline-danger" onclick="window.location.href='{% url 'stop_tracking' player_game_server.id %}'">
     Stop tracking
   </button>
 {% endblock %}

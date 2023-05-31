@@ -134,7 +134,11 @@ class PlayerGameServerSelectView(LoginRequiredMixin, PlayerRequiredMixin, generi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        player = get_object_or_404(Player, player_user=self.request.user)
+        playergameserver_list = PlayerGameServer.objects.filter(player=player)
         context['gameserver_list'] = GameServer.objects.all()
+        context['playergameserver_ids'] = set(playergameserver_list.values_list('game_server_id', flat=True))
+        context['playergameserver'] = set(player.playergameserver_set.all())
         return context
 
     def get_form(self, form_class=None):
@@ -181,6 +185,16 @@ class PlayerTrackTargetListView(LoginRequiredMixin, PlayerRequiredMixin, generic
     def get_queryset(self):
         player_game_server_id = self.kwargs['player_game_server_id']
         return TrackTarget.objects.filter(player_game_server_id=player_game_server_id)
+
+    def post(self, request, *args, **kwargs):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        delete_pk = request.POST.get('delete_pk')
+
+        if delete_pk:
+            tracking_obj = get_object_or_404(TrackTarget, pk=delete_pk)
+            tracking_obj.delete()
+
+        return redirect('server_trackers_endpoint', player_game_server_id=player_game_server_id)
 
 
 class PlayerTrackTargetCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
@@ -280,3 +294,13 @@ class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cre
         existing_task.enabled = False
         existing_task.save()
         return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
+
+
+# class PlayerTrackTargetDeleteView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+#     model = TrackTarget
+#
+#     def get(self, request, pk, player_game_server_id):
+#         tracking_obj = get_object_or_404(TrackTarget, pk=pk)
+#         tracking_obj.delete()
+#         redirect_url = reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id})
+#         return redirect(redirect_url)

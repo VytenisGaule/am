@@ -3,13 +3,50 @@
 
 <h2>My server list:</h2>
 {% if playergameserver_list %}
-  {% for playergameserver in playergameserver_list %}
-    <li><a href="{% url 'server_endpoint' pk=playergameserver.id %}">{{ playergameserver.game_server.name }}</a></li>
-  {% endfor %}
+  <style>
+  table {
+    width: 100%;
+  }
+  th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  th {
+    background-color: #4CAF50;
+    color: white;
+  }
+  td {
+    width: 20%;
+  }
+  </style>
+    <table>
+    <thead>
+      <tr>
+        <th>Server name</th>
+        <th>Tracked objects</th>
+        <th>Passive manager</th>
+        <th>Active manager</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for playergameserver_obj in playergameserver_list %}
+        <tr>
+          <td>
+            <a href="{% url 'server_endpoint' pk=playergameserver_obj.id %}">{{ playergameserver_obj.game_server.name }}</a>
+          </td>
+          <td>
+            <a href="{% url 'server_trackers_endpoint' playergameserver_obj.id %}">{{ playergameserver_obj.game_server.name }} tracker</a>
+          </td>
+          <td><a href="">Passive {{ playergameserver_obj.game_server.name }} actions todo!! </a></td>
+          <td><a href="">Active {{ playergameserver_obj.game_server.name }} actions todo!! </a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 {% else %}
   <p>No servers in the list</p>
 {% endif %}
-<hr>
   <button type="button" onclick="window.location.href='{% url 'add_server_endpoint' request.user.player.id %}'">
     Change server list
   </button>

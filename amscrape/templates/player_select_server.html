@@ -39,7 +39,17 @@
       <tbody>
         {% for server_obj in gameserver_list %}
           <tr>
-            <td><a href=""> {{ server_obj.name }} </a></td>
+            <td>
+              {% if server_obj.id in playergameserver_ids %}
+                {% for playergameserver in playergameserver %}
+                  {% if server_obj.id == playergameserver.game_server.id %}
+                    <a href="{% url 'server_endpoint' pk=playergameserver.id %}">{{ server_obj.name }}</a>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                {{ server_obj.name }}
+              {% endif %}
+            </td>
             <td>{{ server_obj.oversummoning }}</td>
             <td>{{ server_obj.blackmarket }}</td>
             <td>{{ server_obj.bots }}</td>
@@ -47,12 +57,18 @@
             <td>{{ server_obj.permanentuniques }}</td>
             <td>{{ server_obj.period }}</td>
             <td>{{ server_obj.maxturns }}</td>
-            <td><input type="checkbox" name="game_server" value="{{ server_obj.id }}"></td>
+            <td>
+              {% if server_obj.id in playergameserver_ids %}
+                <input type="checkbox" name="game_server" value="{{ server_obj.id }}" checked>
+              {% else %}
+                <input type="checkbox" name="game_server" value="{{ server_obj.id }}">
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
-    <button type="submit" class="btn btn-primary">Manage selected servers</button>
+    <button type="submit" class="btn btn-primary">Change list</button>
   </form>
 {% else %}
   <p>empty list</p>
