@@ -13,6 +13,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
 from .models import *
 from .forms import *
+from .tasks import *
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 import json
 
@@ -236,21 +237,25 @@ class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cr
         session_id = active_session.id
         track_target_ids = list(
             TrackTarget.objects.filter(player_game_server=player_game_server).values_list('id', flat=True))
-        existing_task = PeriodicTask.objects.filter(name='scrape_url_data').first()
+        existing_task = PeriodicTask.objects.filter(playergameserver=player_game_server).first()
         interval = form.instance.interval
+        print(existing_task)
+        print(interval)
         if existing_task:
             existing_task.interval = interval
+            existing_task.enabled = True
             existing_task.save()
         else:
             task = PeriodicTask.objects.create(
-                name='scrape_url_data',
-                task='amscrape.tasks.scrape_url_data',
+                name=f'scrape_url_data_{player_game_server.game_server}',
+                task=f'amscrape.tasks.scrape_url_data_{player_game_server.game_server}',
                 interval=interval,
                 enabled=True,
             )
             task.args = json.dumps([player_game_server.id, session_id, track_target_ids])
             task.save()
-
+            player_game_server.periodic_task = task
+            player_game_server.save()
         return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
 
 
@@ -270,8 +275,8 @@ class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cre
         return form
 
     def form_valid(self, form):
-        player_game_server_id = self.kwargs['player_game_server_id']
-        existing_task = PeriodicTask.objects.filter(name='scrape_url_data').first()
+        player_game_server = get_object_or_404(PlayerGameServer, id=self.kwargs['player_game_server_id'])
+        existing_task = PeriodicTask.objects.filter(playergameserver=player_game_server).first()
         existing_task.enabled = False
         existing_task.save()
-        return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id}))
+        return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))

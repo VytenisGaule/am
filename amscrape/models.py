@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django_celery_beat.models import PeriodicTask
 from django.contrib.postgres.fields import JSONField
 from PIL import Image
 from decimal import Decimal
@@ -99,6 +100,7 @@ class Player(models.Model):
 class PlayerGameServer(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     game_server = models.ForeignKey(GameServer, on_delete=models.CASCADE)
+    periodic_task = models.OneToOneField(PeriodicTask, on_delete=models.CASCADE, null=True, blank=True, default=None)
     period = models.PositiveIntegerField(default=15, help_text='Average minutes between tracking updates')
 
     def __str__(self):
