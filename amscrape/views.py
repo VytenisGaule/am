@@ -296,11 +296,57 @@ class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cre
         return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
 
 
-# class PlayerTrackTargetDeleteView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
-#     model = TrackTarget
-#
-#     def get(self, request, pk, player_game_server_id):
-#         tracking_obj = get_object_or_404(TrackTarget, pk=pk)
-#         tracking_obj.delete()
-#         redirect_url = reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server_id})
-#         return redirect(redirect_url)
+class KingdomStatListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
+    model = KingdomStat
+    template_name = 'kingdom_stat_list.html'
+
+    def get_queryset(self):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        queryset = KingdomStat.objects.filter(player_game_server_id=player_game_server_id)
+        for obj in queryset:
+            obj.values = json.loads(obj.values)
+        json_data_list = [kingdomstat.values for kingdomstat in queryset]
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        kingdomstat_list = self.get_queryset()
+        json_data_list = [kingdomstat.values for kingdomstat in kingdomstat_list]
+        json_keys_set = set()
+        for json_data in json_data_list:
+            json_keys_set.update(json_data.keys())
+        json_keys_list = sorted(json_keys_set)
+        context['json_keys_list'] = json_keys_list
+        context['player_game_server'] = player_game_server
+        return context
+
+
+class KingdomStatFilteredListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
+    model = KingdomStat
+    template_name = 'kingdom_stat_filter_list.html'
+
+    def get_queryset(self):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        selected_key = self.kwargs['selected_key']
+        queryset = KingdomStat.objects.filter(player_game_server_id=player_game_server_id)
+        filtered_data = []
+        for obj in queryset:
+            obj.values = json.loads(obj.values)
+            if selected_key in obj.values:
+                filtered_data.append((obj.timestamp, obj.values[selected_key]))
+        queryset = []
+        for i in range(len(filtered_data)):
+            if i == 0 or filtered_data[i][1] != filtered_data[i-1][1]:
+                queryset.append(filtered_data[i])
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        kingdomstat_list = self.get_queryset()
+        selected_key = self.kwargs['selected_key']
+        context['selected_key'] = selected_key
+        context['player_game_server'] = player_game_server
+        context['kingdomstat_list'] = kingdomstat_list
+        return context

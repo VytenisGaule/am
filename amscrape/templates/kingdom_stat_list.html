@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+{% load custom_filters %}
+
+<h2>
+  <a href="{% url 'server_endpoint' pk=player_game_server.id %}"> {{ player_game_server.game_server.name }}
+  </a> tracking records:
+</h2>
+{% if kingdomstat_list %}
+<table>
+  <thead>
+    <tr>
+      <th>Timestamp</th>
+      {% for key in json_keys_list %}
+      <th> <a href="{% url 'kingdom_stats_filtered_endpoint' player_game_server_id=player_game_server.id selected_key=key %}"> {{ key }} </a></th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for kingdomstat_obj in kingdomstat_list %}
+      <tr>
+        <td>{{ kingdomstat_obj.timestamp|date:'y-m-d G:i:s' }}</td>
+        {% for key in json_keys_list %}
+          <td>{{ kingdomstat_obj.values|get_value_from_dict:key }}</td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p> No records </p>
+{% endif %}
+
+{% endblock %}

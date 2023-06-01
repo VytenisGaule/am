@@ -25,6 +25,7 @@
       <tr>
         <th>Server name</th>
         <th>Tracked objects</th>
+        <th>Tracking records</th>
         <th>Passive manager</th>
         <th>Active manager</th>
       </tr>
@@ -38,6 +39,9 @@
           <td>
             <a href="{% url 'server_trackers_endpoint' playergameserver_obj.id %}">{{ playergameserver_obj.game_server.name }} tracker</a>
           </td>
+          <td>
+            <a href="{% url 'kingdom_statistics_endpoint' playergameserver_obj.id %}">{{ playergameserver_obj.game_server.name }} records</a>
+          </td>
           <td><a href="">Passive {{ playergameserver_obj.game_server.name }} actions todo!! </a></td>
           <td><a href="">Active {{ playergameserver_obj.game_server.name }} actions todo!! </a></td>
         </tr>
@@ -47,7 +51,7 @@
 {% else %}
   <p>No servers in the list</p>
 {% endif %}
-  <button type="button" onclick="window.location.href='{% url 'add_server_endpoint' request.user.player.id %}'">
+  <button type="button" class="btn-outline-dark" onclick="window.location.href='{% url 'add_server_endpoint' request.user.player.id %}'">
     Change server list
   </button>
 {% endblock %}

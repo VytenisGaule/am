@@ -53,6 +53,7 @@ body {
 }
 .navbar {
   white-space: nowrap;
+  }
 .link-button {
   background: none;
   border: none;
@@ -60,4 +61,21 @@ body {
   text-decoration: underline;
   cursor: pointer;
 }
+table {
+border-collapse: collapse;
+width: 100%;
+}
 
+th, td {
+padding: 10px;
+text-align: left;
+}
+
+th {
+background-color: #f2f2f2;
+font-weight: bold;
+}
+
+.data-cell {
+border-bottom: 1px solid #ddd;
+}
