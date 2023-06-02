@@ -55,13 +55,13 @@
   </tbody>
 </table>
 <hr>
-  <button type="button" class="btn-outline-dark" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server.id %}'">
+  <button type="button" class="btn-outline-dark" onclick="window.location.href='{% url 'new_tracking_object_endpoint' player_game_server_id=player_game_server.id %}'">
     Add tracking object
   </button>
-  <button type="button" class="btn-outline-success" onclick="window.location.href='{% url 'start_tracking' player_game_server.id %}'">
+  <button type="button" class="btn-outline-success" onclick="window.location.href='{% url 'start_tracking_endpoint' player_game_server_id=player_game_server.id %}'">
     Start tracking
   </button>
-  <button type="button" class="btn-outline-danger" onclick="window.location.href='{% url 'stop_tracking' player_game_server.id %}'">
+  <button type="button" class="btn-outline-danger" onclick="window.location.href='{% url 'stop_tracking_endpoint' player_game_server_id=player_game_server.id %}'">
     Stop tracking
   </button>
 {% endblock %}

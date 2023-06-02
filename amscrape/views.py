@@ -224,12 +224,6 @@ class PlayerGameServerUpdateView(LoginRequiredMixin, PlayerRequiredMixin, generi
             'pk': self.kwargs['pk']})
 
 
-class KingdomStatView(LoginRequiredMixin, PlayerRequiredMixin, generic.DetailView):
-    model = KingdomStat
-    template_name = 'kingdom_statistics.html'
-    context_object_name = 'kingdom_stat'
-
-
 class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
     model = PeriodicTask
     template_name = 'create_periodic_task.html'
@@ -273,7 +267,7 @@ class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cr
         return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
 
 
-class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.FormView):
     model = PeriodicTask
     template_name = 'stop_periodic_task.html'
     form_class = BaseModelForm
