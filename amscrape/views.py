@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
 from .models import *
 from .forms import *
-from .tasks import *
+from .tasks import scrape_url_data
 from django_celery_beat.models import IntervalSchedule, PeriodicTask
 import json
 
@@ -261,8 +261,8 @@ class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cr
             existing_task.save()
         else:
             task = PeriodicTask.objects.create(
-                name=f'scrape_url_data_{player_game_server.game_server}',
-                task=f'amscrape.tasks.scrape_url_data_{player_game_server.game_server}',
+                name=f'{player_game_server.id}',
+                task='amscrape.tasks.scrape_url_data',
                 interval=interval,
                 enabled=True,
             )
@@ -270,7 +270,10 @@ class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cr
             task.save()
             player_game_server.periodic_task = task
             player_game_server.save()
-        return redirect(reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
+            scrape_url_data.apply_async(args=[player_game_server.id, session_id, track_target_ids],
+                                        task_id=f'scrape_url_data_{player_game_server.id}')
+        return redirect(
+            reverse('server_trackers_endpoint', kwargs={'player_game_server_id': player_game_server.id}))
 
 
 class PeriodicTaskPauseView(LoginRequiredMixin, PlayerRequiredMixin, generic.FormView):
