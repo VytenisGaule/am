@@ -4,6 +4,16 @@ from bs4 import BeautifulSoup
 import json
 import time
 import random
+import re
+
+
+def process_result(result):
+    """Handling both strings and integers as result"""
+    if result:
+        if result[0].isdigit():
+            return re.search(r'([\d,]+)', result).group().replace(',', '')
+        else:
+            return result
 
 
 def get_scraped_data(track_targets, session_data):
@@ -38,16 +48,22 @@ def get_scraped_data(track_targets, session_data):
                 try:
                     keyword_td = soup.find('td', string=track_key.keyword)
                     if keyword_td:
-                        res = int(keyword_td.find_next_siblings('td')[track_key.iterator_value].get_text(strip=True).replace(',', ''))
-                        result[str(track_key)] = res
+                        res = process_result(
+                            keyword_td.find_next_siblings('td')[track_key.iterator_value].get_text(strip=True))
+                        if str(track_key) in result:
+                            result[str(track_key)].append(res)
+                        else:
+                            result[str(track_key)] = [res]
                 except IndexError:
                     print(f"Error: Invalid iterator value for track_key: {track_key}")
         except requests.exceptions.HTTPError as http_err:
             print(f"Error: HTTP error occurred while fetching data for link: {link}, Error message: {str(http_err)}")
         except requests.exceptions.RequestException as req_err:
-            print(f"Error: Request exception occurred while fetching data for link: {link}, Error message: {str(req_err)}")
+            print(
+                f"Error: Request exception occurred while fetching data for link: {link}, Error message: {str(req_err)}")
         except Exception as err:
-            print(f"Error: An unexpected error occurred while fetching data for link: {link}, Error message: {str(err)}")
+            print(
+                f"Error: An unexpected error occurred while fetching data for link: {link}, Error message: {str(err)}")
         if i != link_count - 1:
             time.sleep(random.randint(1, 3))
     json_data = json.dumps(result)

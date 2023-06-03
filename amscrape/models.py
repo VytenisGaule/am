@@ -146,12 +146,11 @@ class KingdomStat(models.Model):
 # class Condition(models.Model):
 #     kingdom_stat = models.ForeignKey(KingdomStat, on_delete=models.CASCADE)
 #     POSSIBLE_OPERATORS = (
-#         ('<', 'less than'),
-#         ('>', 'more than'),
-#         ('!=', 'change'),
-#         ('->', 'increase'),
-#         ('<-', 'decrease'),
-#         ('==', 'match'),
+#         ('<', 'is less than'),
+#         ('>', 'is more than'),
+#         ('==', 'exactly'),
+#         ('->', 'increased'),
+#         ('<-', 'decreased'),
+#         ('<>', 'changed'),
 #     )
 #     operator = models.CharField('condition operator', max_length=2, choices=POSSIBLE_OPERATORS)
-

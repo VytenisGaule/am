@@ -1,5 +1,3 @@
-from abc import ABC
-
 from django.utils import timezone
 from django.http import HttpResponse, Http404
 from django.urls import reverse_lazy
@@ -11,6 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
+from django.core.exceptions import ObjectDoesNotExist
 from .models import *
 from .forms import *
 from .tasks import *
@@ -149,16 +148,23 @@ class PlayerGameServerSelectView(LoginRequiredMixin, PlayerRequiredMixin, generi
     def form_valid(self, form):
         player = get_object_or_404(Player, player_user=self.request.user)
         selected_servers = form.cleaned_data['game_server'].all()
+        removed_servers = GameServer.objects.exclude(id__in=selected_servers.values_list('id', flat=True))
+        for server in removed_servers:
+            try:
+                player_game_server = PlayerGameServer.objects.get(player=player, game_server=server)
+                if player_game_server.periodic_task:
+                    player_game_server.periodic_task.delete()
+                    player_game_server.delete()
+            except ObjectDoesNotExist:
+                pass
         player.game_server.set(selected_servers)
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
         form = self.get_form()
         if form.is_valid():
-            print('form valid')
             return self.form_valid(form)
         else:
-            print("Form errors:", form.errors)
             return self.form_invalid(form)
 
     def get_success_url(self):
@@ -242,16 +248,16 @@ class PeriodicTaskCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.Cr
     def form_valid(self, form):
         player_game_server = get_object_or_404(PlayerGameServer, id=self.kwargs['player_game_server_id'])
         active_session = get_object_or_404(PlayerSession, player=player_game_server.player, is_active=True)
-        session_id = active_session.id
         track_target_ids = list(
-            TrackTarget.objects.filter(player_game_server=player_game_server).values_list('id', flat=True))
+            TrackTarget.objects.filter(player_game_server=player_game_server).values_list('id', flat=True)
+        )
+        session_id = active_session.id
         existing_task = PeriodicTask.objects.filter(playergameserver=player_game_server).first()
         interval = form.instance.interval
-        print(existing_task)
-        print(interval)
         if existing_task:
             existing_task.interval = interval
             existing_task.enabled = True
+            existing_task.args = json.dumps([player_game_server.id, active_session.id, track_target_ids])
             existing_task.save()
         else:
             task = PeriodicTask.objects.create(
