@@ -1,4 +1,4 @@
-from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer
+from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer, Condition
 from django_celery_beat.models import PeriodicTask
 from django import forms
 from django.contrib.auth.models import User
@@ -108,3 +108,11 @@ class BaseModelForm(forms.ModelForm):
         model = PeriodicTask
         fields = []
 
+
+class ConditionCreateForm(forms.ModelForm):
+    class Meta:
+        model = Condition
+        fields = ['operator']
+        widgets = {
+            'operator': forms.Select(),
+        }

@@ -32,4 +32,6 @@ urlpatterns = urlpatterns + [
          name='start_tracking_endpoint'),
     path('myserver/<int:player_game_server_id>/stoptracking/', views.PeriodicTaskPauseView.as_view(),
          name='stop_tracking_endpoint'),
+    path('myserver/<int:player_game_server_id>/<int:track_target_id>/newcondition',
+         views.TrackTargetConditionCreateView.as_view(), name='add_condition_endpoint'),
 ]

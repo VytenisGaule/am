@@ -143,14 +143,20 @@ class KingdomStat(models.Model):
         return f'{self.timestamp}'
 
 
-# class Condition(models.Model):
-#     kingdom_stat = models.ForeignKey(KingdomStat, on_delete=models.CASCADE)
-#     POSSIBLE_OPERATORS = (
-#         ('<', 'is less than'),
-#         ('>', 'is more than'),
-#         ('==', 'exactly'),
-#         ('->', 'increased'),
-#         ('<-', 'decreased'),
-#         ('<>', 'changed'),
-#     )
-#     operator = models.CharField('condition operator', max_length=2, choices=POSSIBLE_OPERATORS)
+class Condition(models.Model):
+    track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
+    POSSIBLE_OPERATORS = (
+        ('<', 'is less than'),
+        ('>', 'is more than'),
+        ('==', 'exactly'),
+        ('->', 'increased'),
+        ('<-', 'decreased'),
+        ('<>', 'changed'),
+    )
+    operator = models.CharField('condition operator', max_length=2, choices=POSSIBLE_OPERATORS)
+#     variable = models.CharField('variable to compare, that is constantly updated', max_length=100)
+#
+#
+# # Usage:  Update the variable value
+# condition.variable = 'updated_variable'
+# condition.save()

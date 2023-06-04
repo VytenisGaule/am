@@ -353,3 +353,20 @@ class KingdomStatFilteredListView(LoginRequiredMixin, PlayerRequiredMixin, gener
         context['player_game_server'] = player_game_server
         context['kingdomstat_list'] = kingdomstat_list
         return context
+
+
+class TrackTargetConditionCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+    model = Condition
+    template_name = 'create_tracking_based_condition.html'
+    form_class = ConditionCreateForm
+
+    def form_valid(self, form):
+        track_target_id = self.kwargs['track_target_id']
+        print("track_target_id == ", track_target_id)
+        track_target = TrackTarget.objects.get(pk=track_target_id)
+        form.instance.track_target = track_target
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('server_trackers_endpoint',
+                            kwargs={'player_game_server_id': self.object.track_target.player_game_server_id})

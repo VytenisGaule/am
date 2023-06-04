@@ -28,7 +28,8 @@
       <th>Keyword</th>
       <th>Link</th>
       <th>Iterator Value</th>
-      <th>Remove</th>
+      <th>Remove tracking obj</th>
+      <th>Set conditions</th>
     </tr>
   </thead>
   <tbody>
@@ -45,6 +46,14 @@
               <button type="submit" class="delete-button btn-outline-danger">Delete</button>
             </form>
           </td>
+            <td>
+              <form method="POST" action="{% url 'add_condition_endpoint' player_game_server_id=player_game_server.id track_target_id=tracking_obj.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="track_target_id" value="{{ tracking_obj.pk }}">
+                {{ form.operator }}
+                <button type="submit" class="create-button btn-outline-success">Add condition</button>
+              </form>
+            </td>
         </tr>
       {% endfor %}
     {% else %}
