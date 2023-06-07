@@ -355,6 +355,15 @@ class KingdomStatFilteredListView(LoginRequiredMixin, PlayerRequiredMixin, gener
         return context
 
 
+class KingdomStatDeleteView(LoginRequiredMixin, PlayerRequiredMixin, generic.View):
+    model = KingdomStat
+
+    def post(self, request, *args, **kwargs):
+        selected_instances = request.POST.getlist('selected_instances')
+        KingdomStat.objects.filter(id__in=selected_instances).delete()
+        return redirect('kingdom_statistics_endpoint', player_game_server_id=self.kwargs['player_game_server_id'])
+
+
 class TrackTargetConditionCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
     model = Condition
     template_name = 'create_tracking_based_condition.html'
@@ -362,7 +371,6 @@ class TrackTargetConditionCreateView(LoginRequiredMixin, PlayerRequiredMixin, ge
 
     def form_valid(self, form):
         track_target_id = self.kwargs['track_target_id']
-        print("track_target_id == ", track_target_id)
         track_target = TrackTarget.objects.get(pk=track_target_id)
         form.instance.track_target = track_target
         return super().form_valid(form)
@@ -370,3 +378,40 @@ class TrackTargetConditionCreateView(LoginRequiredMixin, PlayerRequiredMixin, ge
     def get_success_url(self):
         return reverse_lazy('server_trackers_endpoint',
                             kwargs={'player_game_server_id': self.object.track_target.player_game_server_id})
+
+
+class ConditionListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
+    model = Condition
+    template_name = 'condition_list.html'
+
+    def get_queryset(self):
+        track_target_id = self.kwargs['track_target_id']
+        queryset = Condition.objects.filter(track_target_id=track_target_id)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        track_target = TrackTarget.objects.get(pk=self.kwargs['track_target_id'])
+        condition_list = self.get_queryset()
+        context['player_game_server'] = player_game_server
+        context['track_target'] = track_target
+        context['condition_list'] = condition_list
+        return context
+
+
+class ConditionDeleteView(LoginRequiredMixin, PlayerRequiredMixin, generic.DeleteView):
+    model = Condition
+    template_name = 'condition_delete.html'
+
+    def test_func(self):
+        user = self.request.user
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        condition = Condition.objects.get(pk=self.kwargs['pk'])
+        return player_game_server.player.player_user == user and condition is not None
+
+    def get_success_url(self):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        track_target_id = self.kwargs['track_target_id']
+        return reverse_lazy('condition_list_endpoint', kwargs={'player_game_server_id': player_game_server_id,
+                                                               'track_target_id': track_target_id})

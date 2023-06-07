@@ -36,7 +36,9 @@
     {% if track_targets %}
       {% for tracking_obj in track_targets %}
         <tr>
-          <td>{{ tracking_obj.keyword }}</td>
+          <td>
+            <a href="{% url 'condition_list_endpoint' player_game_server_id=player_game_server.id track_target_id=tracking_obj.id %}">{{ tracking_obj.keyword }}</a>
+          </td>
           <td>{{ tracking_obj.link }}</td>
           <td>{{ tracking_obj.iterator_value }}</td>
           <td>

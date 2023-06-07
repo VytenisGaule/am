@@ -79,3 +79,15 @@ font-weight: bold;
 .data-cell {
 border-bottom: 1px solid #ddd;
 }
+
+.red-link {
+  color: red;
+}
+
+.table-container {
+  margin-bottom: 20px;
+}
+
+.button-container {
+  text-align: right;
+}

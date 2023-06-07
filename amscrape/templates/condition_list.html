@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>
+  <a href="{% url 'server_endpoint' pk=player_game_server.id %}">
+    {{ player_game_server.game_server.name }}
+  </a> server defined condition:
+</h2>
+{% if condition_list %}
+  <table class="track-targets">
+    <thead>
+      <tr>
+        <th>Operator</th>
+        <th>Value</th>
+        <th>Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for condition_obj in condition_list %}
+        <tr>
+          <td> "{{ track_target }}" {{ condition_obj.get_operator_display }} ({{ condition_obj.operator }})</td>
+          <td>{{ condition_obj.value }}</td>
+          <td>
+            <a href="{% url 'condition_delete_endpoint' player_game_server_id=player_game_server.id track_target_id=track_target.id pk=condition_obj.id %}" class="red-link">X
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>No conditions are set for "{{ track_target }}" tracker</p>
+{% endif %}
+<h4>Back to
+  <a href="{% url 'server_trackers_endpoint' player_game_server_id=player_game_server.id %}"> tracked objects</a>
+</h4>
+{% endblock %}

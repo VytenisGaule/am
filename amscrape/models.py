@@ -149,14 +149,16 @@ class Condition(models.Model):
         ('<', 'is less than'),
         ('>', 'is more than'),
         ('==', 'exactly'),
-        ('->', 'increased'),
-        ('<-', 'decreased'),
-        ('<>', 'changed'),
+        ('!=', 'any except'),
+        ('->', 'absolute increase'),
+        ('<-', 'absolute decrease'),
+        ('%>', 'percentage increase'),
+        ('<%', 'percentage decrease'),
     )
     operator = models.CharField('condition operator', max_length=2, choices=POSSIBLE_OPERATORS)
-#     variable = models.CharField('variable to compare, that is constantly updated', max_length=100)
-#
-#
+    value = models.CharField(max_length=100, help_text='value to compare condition')
+
+
 # # Usage:  Update the variable value
-# condition.variable = 'updated_variable'
+# condition.dynamic_value = 'updated_variable'
 # condition.save()

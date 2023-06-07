@@ -112,7 +112,7 @@ class BaseModelForm(forms.ModelForm):
 class ConditionCreateForm(forms.ModelForm):
     class Meta:
         model = Condition
-        fields = ['operator']
+        fields = ['operator', 'value']
         widgets = {
             'operator': forms.Select(),
         }

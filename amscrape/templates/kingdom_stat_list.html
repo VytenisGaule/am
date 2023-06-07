@@ -7,26 +7,49 @@
   </a> tracking records:
 </h2>
 {% if kingdomstat_list %}
-<table>
-  <thead>
-    <tr>
-      <th>Timestamp</th>
-      {% for key in json_keys_list %}
-      <th> <a href="{% url 'kingdom_stats_filtered_endpoint' player_game_server_id=player_game_server.id selected_key=key %}"> {{ key }} </a></th>
-      {% endfor %}
-    </tr>
-  </thead>
-  <tbody>
-    {% for kingdomstat_obj in kingdomstat_list %}
+<form method="post" id="delete-form" action="{% url 'kingdomstat_delete_endpoint' player_game_server_id=player_game_server.id %}">
+  {% csrf_token %}
+  <table>
+    <thead>
       <tr>
-        <td>{{ kingdomstat_obj.timestamp|date:'y-m-d G:i:s' }}</td>
+        <th>Timestamp</th>
         {% for key in json_keys_list %}
-          <td>{{ kingdomstat_obj.values|get_value_from_dict:key }}</td>
+          <th> <a href="{% url 'kingdom_stats_filtered_endpoint' player_game_server_id=player_game_server.id selected_key=key %}"> {{ key }} </a></th>
         {% endfor %}
+        <th>
+          <input type="checkbox" id="select-all-checkbox">
+          <label for="select-all-checkbox">Select All</label>
+        </th>
       </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      {% for kingdomstat_obj in kingdomstat_list %}
+        <tr>
+          <td>{{ kingdomstat_obj.timestamp|date:'y-m-d G:i:s' }}</td>
+          {% for key in json_keys_list %}
+            <td>{{ kingdomstat_obj.values|get_value_from_dict:key }}</td>
+          {% endfor %}
+          <td>
+            <input type="checkbox" name="selected_instances" value="{{ kingdomstat_obj.id }}">
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="button-container">
+    <button class="btn btn-outline-danger" type="submit">Delete selected</button>
+  </div>
+</form>
+
+<script>
+document.getElementById('select-all-checkbox').addEventListener('change', function () {
+  var checkboxes = document.getElementsByName('selected_instances');
+  for (var i = 0; i < checkboxes.length; i++) {
+    checkboxes[i].checked = this.checked;
+  }
+});
+</script>
+
 {% else %}
 <p> No records </p>
 {% endif %}
