@@ -23,7 +23,7 @@ class UserUpdateForm(forms.ModelForm):
 class PlayerUpdateForm(forms.ModelForm):
     class Meta:
         model = Player
-        fields = ['nickname', 'avatar', 'timezone', 'active_time_start', 'active_time_end']
+        fields = ['nickname', 'avatar', 'discord_id', 'timezone', 'active_time_start', 'active_time_end']
 
 
 class PlayerSessionCreateForm(forms.ModelForm):

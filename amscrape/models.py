@@ -6,6 +6,7 @@ from PIL import Image
 from decimal import Decimal
 from django.utils import timezone
 from datetime import datetime, time
+from .discord_bot import send_warning
 
 
 class GameServer(models.Model):
@@ -39,6 +40,7 @@ class Player(models.Model):
     player_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='player')
     game_server = models.ManyToManyField(GameServer, through='PlayerGameServer', blank=True)
     nickname = models.CharField('Nickname', max_length=100)
+    discord_id = models.CharField('Discord ID', max_length=18, null=True, blank=True)
     avatar = models.ImageField(default='profile_pics/default.png', upload_to='profile_pics')
     TIME_ZONES = (
         ('UTC', 'Universal Coordinated Time GMT'),
@@ -144,7 +146,6 @@ class KingdomStat(models.Model):
 
 
 class Condition(models.Model):
-    track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
     POSSIBLE_OPERATORS = (
         ('<', 'is less than'),
         ('>', 'is more than'),
@@ -157,8 +158,41 @@ class Condition(models.Model):
     )
     operator = models.CharField('condition operator', max_length=2, choices=POSSIBLE_OPERATORS)
     value = models.CharField(max_length=100, help_text='value to compare condition')
+    track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.get_operator_display()} {self.value}'
 
 
-# # Usage:  Update the variable value
-# condition.dynamic_value = 'updated_variable'
-# condition.save()
+class Rule(models.Model):
+    PASSIVE_FUNCTION_CHOICES = [
+        ('send_warning', 'Notify via discord bot'),
+        ('swith_defensive_item', 'Change defensive item'),
+        ('swith_defensive_spell', 'Change defensive spell'),
+        ('change_preorder_sum', 'Remove existing preorder sum and add new one'),
+        ('recruit', 'change recruitable units'),
+        ('donate', 'donate to god'),
+    ]
+    passive_function = models.CharField(max_length=100, choices=PASSIVE_FUNCTION_CHOICES, blank=True, null=True)
+    conditions = models.ManyToManyField(Condition)
+
+    def perform_reaction(self):
+        if self.passive_function == 'send_warning':
+            discord_id = self.conditions.values_list('track_target__player_game_server__player__discord_id',
+                                                     flat=True)[0]
+            condition = self.conditions.first()
+            game_server_str = str(condition.track_target.player_game_server.game_server)
+            message = f'Warning {str(condition.track_target)} {str(condition)} in {game_server_str}'
+            send_warning(discord_id, message)
+        # elif self.passive_function == 'swith_defensive_item':
+        #     utils.swith_defensive_item()
+        # elif self.passive_function == 'swith_defensive_spell':
+        #     utils.swith_defensive_spell()
+        # elif self.passive_function == 'change_preorder_sum':
+        #     utils.change_preorder_sum()
+        # elif self.passive_function == 'recruit':
+        #     utils.recruit()
+        # elif self.passive_function == 'donate':
+        #     utils.donate()
+        else:
+            pass
