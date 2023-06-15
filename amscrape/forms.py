@@ -1,4 +1,4 @@
-from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer, Condition
+from .models import Player, PlayerSession, GameServer, TrackTarget, PlayerGameServer, Condition, Rule
 from django_celery_beat.models import PeriodicTask
 from django import forms
 from django.contrib.auth.models import User
@@ -116,3 +116,28 @@ class ConditionCreateForm(forms.ModelForm):
         widgets = {
             'operator': forms.Select(),
         }
+
+
+class RuleCreateForm(forms.ModelForm):
+    conditions = forms.ModelMultipleChoiceField(
+        queryset=Condition.objects.all(),
+        widget=forms.SelectMultiple(attrs={'size': 8}),
+        required=True,
+    )
+
+    class Meta:
+        model = Rule
+        fields = ['passive_function', 'conditions']
+        widgets = {
+            'passive_function': forms.Select(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['conditions'].initial = []
+
+    def clean_conditions(self):
+        conditions = self.cleaned_data['conditions']
+        if not conditions:
+            raise forms.ValidationError("Please select at least one condition.")
+        return conditions

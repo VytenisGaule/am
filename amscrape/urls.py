@@ -40,4 +40,8 @@ urlpatterns = urlpatterns + [
          views.ConditionListView.as_view(), name='condition_list_endpoint'),
     path('myserver/<int:player_game_server_id>/<int:track_target_id>/condition/<int:pk>',
          views.ConditionDeleteView.as_view(), name='condition_delete_endpoint'),
+    path('myserver/<int:player_game_server_id>/rules/', views.RuleListView.as_view(),
+         name='kingdom_rules_endpoint'),
+    path('myserver/<int:player_game_server_id>/newrule/', views.RuleCreateView.as_view(),
+         name='new_rule_endpoint'),
 ]

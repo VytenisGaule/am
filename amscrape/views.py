@@ -340,7 +340,7 @@ class KingdomStatFilteredListView(LoginRequiredMixin, PlayerRequiredMixin, gener
                 filtered_data.append((obj.timestamp, obj.values[selected_key]))
         queryset = []
         for i in range(len(filtered_data)):
-            if i == 0 or filtered_data[i][1] != filtered_data[i-1][1]:
+            if i == 0 or filtered_data[i][1] != filtered_data[i - 1][1]:
                 queryset.append(filtered_data[i])
         return queryset
 
@@ -406,12 +406,57 @@ class ConditionDeleteView(LoginRequiredMixin, PlayerRequiredMixin, generic.Delet
 
     def test_func(self):
         user = self.request.user
-        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
-        condition = Condition.objects.get(pk=self.kwargs['pk'])
-        return player_game_server.player.player_user == user and condition is not None
+        player_game_server_id = self.kwargs['player_game_server_id']
+        condition_id = self.kwargs['pk']
+        condition = get_object_or_404(Condition, pk=condition_id)
+        player_game_server = get_object_or_404(PlayerGameServer, pk=player_game_server_id)
+        return player_game_server.player.player_user == user and condition.rule_set.count() == 0
 
     def get_success_url(self):
         player_game_server_id = self.kwargs['player_game_server_id']
         track_target_id = self.kwargs['track_target_id']
         return reverse_lazy('condition_list_endpoint', kwargs={'player_game_server_id': player_game_server_id,
                                                                'track_target_id': track_target_id})
+
+
+class RuleListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
+    model = Rule
+    template_name = 'server_rules_list.html'
+
+    def get_queryset(self):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
+        queryset = Rule.objects.filter(conditions__track_target__player_game_server=player_game_server)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        player_game_server = PlayerGameServer.objects.get(pk=self.kwargs['player_game_server_id'])
+        rule_list = context['object_list']
+        condition_dict = {}
+        track_target_dict = {}
+        for rule in rule_list:
+            conditions = rule.conditions.all()
+            track_targets = TrackTarget.objects.filter(condition__in=conditions)
+            condition_dict[rule.id] = conditions
+            track_target_dict[rule.id] = track_targets
+        context['condition_dict'] = condition_dict
+        context['track_target_dict'] = track_target_dict
+        context['player_game_server'] = player_game_server
+        return context
+
+
+class RuleCreateView(LoginRequiredMixin, PlayerRequiredMixin, generic.CreateView):
+    model = Rule
+    template_name = 'new_rule.html'
+    form_class = RuleCreateForm
+
+    def form_valid(self, form):
+        player_game_server_id = self.kwargs['player_game_server_id']
+        player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
+        form.instance.player_game_server = player_game_server
+        self.player_game_server_id = player_game_server_id
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('kingdom_rules_endpoint', kwargs={'player_game_server_id': self.player_game_server_id})

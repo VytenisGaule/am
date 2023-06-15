@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>
+  <a href="{% url 'server_endpoint' pk=player_game_server.id %}">
+    {{ player_game_server.game_server.name }}
+  </a> server ruler
+</h2>
+  {% if object_list %}
+    {% for rule_obj in object_list %}
+      <p> Rule - {{ rule_obj.passive_function }} </p>
+      {% if rule_obj.conditions.all %}
+        <ul>
+          {% for condition in rule_obj.conditions.all %}
+            <li>
+              <strong>Condition:</strong> {{ condition }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No conditions are set for this rule.</p>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p>No rules are set for {{ player_game_server.game_server.name }} server.</p>
+  {% endif %}
+<hr>
+  <button type="button" class="btn-outline-dark" onclick="window.location.href='{% url 'new_rule_endpoint' player_game_server_id=player_game_server.id %}'">
+    Add rule
+  </button>
+{% endblock %}

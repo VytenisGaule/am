@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django_celery_beat.models import PeriodicTask
 from django.contrib.postgres.fields import JSONField
 from PIL import Image
@@ -133,7 +134,7 @@ class TrackTarget(models.Model):
     iterator_value = models.PositiveIntegerField(default=0, help_text='Index of value, if it is a table, first=0')
 
     def __str__(self):
-        return self.keyword
+        return f'{self.keyword}[{self.iterator_value}]'
 
 
 class KingdomStat(models.Model):
@@ -161,7 +162,7 @@ class Condition(models.Model):
     track_target = models.ForeignKey(TrackTarget, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.get_operator_display()} {self.value}'
+        return f'{self.track_target} {self.get_operator_display()} {self.value}'
 
 
 class Rule(models.Model):
