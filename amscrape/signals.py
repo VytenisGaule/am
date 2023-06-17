@@ -2,7 +2,6 @@ from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User, Group
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from .models import Player, Rule
 
 

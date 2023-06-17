@@ -164,6 +164,30 @@ class Condition(models.Model):
     def __str__(self):
         return f'{self.track_target} {self.get_operator_display()} {self.value}'
 
+    def compare_values(self, desired_value):
+        try:
+            value = int(str(self.value))
+        except ValueError:
+            value = self.value
+        if self.operator == '<':
+            return desired_value < value
+        elif self.operator == '>':
+            return desired_value > value
+        elif self.operator == '==':
+            return desired_value == value
+        elif self.operator == '!=':
+            return desired_value != value
+        elif self.operator == '->':
+            return desired_value - value > 0
+        elif self.operator == '<-':
+            return desired_value - value < 0
+        elif self.operator == '%>':
+            return (desired_value - value) / value * 100 > 0
+        elif self.operator == '<%':
+            return (desired_value - value) / value * 100 < 0
+        else:
+            return False
+
 
 class Rule(models.Model):
     PASSIVE_FUNCTION_CHOICES = [
@@ -183,8 +207,8 @@ class Rule(models.Model):
                                                      flat=True)[0]
             condition = self.conditions.first()
             game_server_str = str(condition.track_target.player_game_server.game_server)
-            message = f'Warning {str(condition.track_target)} {str(condition)} in {game_server_str}'
-            send_warning(discord_id, message)
+            message = f'Warning! {str(condition)} in {game_server_str} server'
+            send_warning.delay(discord_id, message)
         # elif self.passive_function == 'swith_defensive_item':
         #     utils.swith_defensive_item()
         # elif self.passive_function == 'swith_defensive_spell':
