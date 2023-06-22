@@ -18,7 +18,7 @@ def scrape_url_data(player_game_server_id, active_session_id, track_target_ids):
         kingdom_stat = KingdomStat.objects.create(player_game_server=player_game_server, values=values)
     except Exception as e:
         return
-    rules_queryset = Rule.objects.filter(conditions__track_target__in=track_targets)
+    rules_queryset = Rule.objects.filter(conditions__track_target__in=track_targets).distinct()
     for rule in rules_queryset:
         conditions = rule.conditions.all()
         all_conditions_satisfied = True

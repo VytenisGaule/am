@@ -8,6 +8,8 @@ from decimal import Decimal
 from django.utils import timezone
 from datetime import datetime, time
 from .discord_bot import send_warning
+from .utils import select_dropdow, select_checkbox, select_radiobox, enter_manually, press_button, \
+    press_submit, process_result, DropdownError, SubmitError
 
 
 class GameServer(models.Model):
@@ -202,17 +204,41 @@ class Rule(models.Model):
     conditions = models.ManyToManyField(Condition)
 
     def perform_reaction(self):
+        import time
+
+        discord_id = self.conditions.values_list('track_target__player_game_server__player__discord_id',
+                                                 flat=True)[0]
+        active_session = self.conditions.all()[0].track_target.player_game_server.player.playersession_set.filter(
+            is_active=True).latest('id')
         if self.passive_function == 'send_warning':
-            discord_id = self.conditions.values_list('track_target__player_game_server__player__discord_id',
-                                                     flat=True)[0]
-            condition = self.conditions.first()
-            game_server_str = str(condition.track_target.player_game_server.game_server)
-            message = f'Warning! {str(condition)} in {game_server_str} server'
+            conditions = self.conditions.all()
+            game_server_str = str(conditions[0].track_target.player_game_server.game_server)
+            condition_str = ';\n '.join(str(condition) for condition in conditions)
+            message = f'Warning!\n {condition_str} \nIn {game_server_str} server'
             send_warning.delay(discord_id, message)
+        elif self.passive_function == 'swith_defensive_spell':
+            choice_value = self.conditions.all()[0].track_target.player_game_server.game_server.name
+            link = dict(GameServer.SERVER_URL_ENDPOINTS).get(choice_value)[:-12] + 'assign.cgi'
+            try:
+                select_dropdow(
+                    link=link,
+                    dropbox_keyword_or_id='SELECT BATTLE SPELL',
+                    new_option='304',
+                    session_data=active_session.session_data
+                )
+                time.sleep(1)
+            except DropdownError as e:
+                send_warning.delay(discord_id, str(e))
+            try:
+                press_submit(
+                    link=link,
+                    submitbutton_value='Assign',
+                    session_data=active_session.session_data
+                )
+            except SubmitError as e:
+                send_warning.delay(discord_id, str(e))
         # elif self.passive_function == 'swith_defensive_item':
         #     utils.swith_defensive_item()
-        # elif self.passive_function == 'swith_defensive_spell':
-        #     utils.swith_defensive_spell()
         # elif self.passive_function == 'change_preorder_sum':
         #     utils.change_preorder_sum()
         # elif self.passive_function == 'recruit':

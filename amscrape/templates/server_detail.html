@@ -1,8 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ player_game_server.game_server.name }}</h2>
-<p><a href="{% url 'server_trackers_endpoint' player_game_server_id=player_game_server.id %}">List of tracked objects</a></p>
-<p><a href="{% url 'update_server_parameters_endpoint' pk=player_game_server.id %}">Change server paramaters</a></p>
-<p><a href="">Passive manager</a></p>
-<p><a href="">Active manager</a></p>
+<div>
+  <h2>{{ player_game_server.game_server.name }}
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'update_server_parameters_endpoint' pk=player_game_server.id %}'">
+    Change Parameters
+  </button>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'server_trackers_endpoint' player_game_server_id=player_game_server.id %}'">
+    Tracked Objects
+  </button>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'kingdom_rules_endpoint' player_game_server_id=player_game_server.id %}'">
+    Rules
+  </button>
+  <button type="button" class="btn btn-outline-primary" onclick="window.location.href='{% url 'kingdom_statistics_endpoint' player_game_server_id=player_game_server.id %}'">
+    Statistics
+  </button>
+  <button type="button" class="btn btn-outline-success" onclick="window.location.href='{% url 'start_tracking_endpoint' player_game_server_id=player_game_server.id %}'">
+    Start Tracking
+  </button>
+  <button type="button" class="btn btn-outline-danger" onclick="window.location.href='{% url 'stop_tracking_endpoint' player_game_server_id=player_game_server.id %}'">
+    Stop Tracking
+  </button>
+  </h2>
+</div>
 {% endblock %}

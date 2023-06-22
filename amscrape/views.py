@@ -426,7 +426,7 @@ class RuleListView(LoginRequiredMixin, PlayerRequiredMixin, generic.ListView):
     def get_queryset(self):
         player_game_server_id = self.kwargs['player_game_server_id']
         player_game_server = get_object_or_404(PlayerGameServer, id=player_game_server_id)
-        queryset = Rule.objects.filter(conditions__track_target__player_game_server=player_game_server)
+        queryset = Rule.objects.filter(conditions__track_target__player_game_server=player_game_server).distinct()
         return queryset
 
     def get_context_data(self, **kwargs):

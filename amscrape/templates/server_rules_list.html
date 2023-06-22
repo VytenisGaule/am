@@ -8,7 +8,7 @@
 </h2>
   {% if object_list %}
     {% for rule_obj in object_list %}
-      <p> Rule - {{ rule_obj.passive_function }} </p>
+      <p> {{ rule_obj.passive_function }}, if all following conditions met: </p>
       {% if rule_obj.conditions.all %}
         <ul>
           {% for condition in rule_obj.conditions.all %}

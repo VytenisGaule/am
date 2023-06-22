@@ -2,6 +2,7 @@ from django.test import TestCase
 from .models import Rule
 from unittest.mock import patch
 
+
 class RuleTestCase(TestCase):
     def setUp(self):
         super().setUp()
