@@ -11,7 +11,15 @@ class DropdownError(Exception):
     pass
 
 
+class EntryError(Exception):
+    pass
+
+
 class SubmitError(Exception):
+    pass
+
+
+class CheckboxError(Exception):
     pass
 
 
@@ -89,87 +97,92 @@ def get_scraped_data(track_targets, session_data):
     return json_data
 
 
-def select_dropdow(link, dropbox_keyword_or_id, new_option, session_data):
-    """function selects new option in html dropdox"""
-    session, soup = create_session(link, session_data)
-    if detect_captcha(soup):
-        raise DropdownError('Captcha detected while trying to select dropdown')
-    """ select_tag find both id and name, whatever is defined"""
+def select_dropdown(soup, dropbox_keyword_or_id, new_dropdown_option):
+    """changes dropmenu of given keyword or id seletion to new_dropdown_option(format is 'positive int')"""
     select_tag = soup.find('select', attrs={'name': dropbox_keyword_or_id}) or soup.find('select', attrs={
         'id': dropbox_keyword_or_id})
     if not select_tag:
         raise DropdownError('Invalid dropbox_keyword_or_id of select dropdown')
     else:
-        option = select_tag.find('option', {'value': new_option})
-        if not option:
+        current_selected_option = select_tag.find('option', {'selected': True})
+        if current_selected_option:
+            del current_selected_option['selected']
+        new_option_element = select_tag.find('option', {'value': new_dropdown_option})
+        if not new_option_element:
             raise DropdownError('Invalid new value for select dropdown')
         else:
-            option['selected'] = 'selected'
-            return True
+            new_option_element['selected'] = True
+        return soup
 
 
-def enter_manually(link, input_keyword_or_id, new_value, session_data):
-    session, soup = create_session(link, session_data)
-    if detect_captcha(soup):
-        return False
-    """ input_tag find both id and name, whatever is defined"""
+def enter_manually(soup, input_keyword_or_id, new_entry_value):
+    """fills new_entry_value (int or str) into entry field of given keyword or id"""
     input_tag = soup.find('input', attrs={'name': input_keyword_or_id}) or soup.find('input', attrs={
         'id': input_keyword_or_id})
-    if input_tag:
+    if not input_tag:
+        raise EntryError('Entry not found')
+    else:
         input_type = input_tag.get('type', 'text')
         if input_type == 'number':
             try:
-                new_value = int(new_value)
+                new_value = int(new_entry_value)
             except ValueError:
-                return False
-        input_tag['value'] = str(new_value)
-        return True
-    return False
-    pass
+                raise EntryError('Invalid entry value')
+        input_tag['value'] = str(new_entry_value)
+        return soup
 
 
-def select_checkbox(link, checkbox_name_or_id, session_data):
-    session, soup = create_session(link, session_data)
-    if detect_captcha(soup):
-        return False
+def add_queue(soup, queue_name_or_id, new_queue_value):
+    """new_queue_value format is '1-1|3-1|'  - represents militia - 1 pcs, pikeman - 1 pcs"""
+    queue = soup.find('input', {'type': 'hidden', '$or': [{'id': queue_name_or_id}, {'name': queue_name_or_id}]})
+    if not queue:
+        raise EntryError('Queue not found')
+    else:
+        queue['value'] = new_queue_value
+        return soup
+
+
+def select_checkbox(soup, checkbox_name_or_id):
+    """Selects checkbox of given id or name"""
     checkbox = soup.find('input',
                          {'type': 'checkbox', '$or': [{'id': checkbox_name_or_id}, {'name': checkbox_name_or_id}]})
-    if checkbox:
-        checkbox['checked'] = 'checked'
-        return True
-    return False
+    if not checkbox:
+        raise CheckboxError('Checkbox missing')
+    else:
+        checkbox['checked'] = True
+        return soup
 
 
-def select_radiobox(link, radiobox_name_or_id, session_data):
-    session, soup = create_session(link, session_data)
-    if detect_captcha(soup):
-        return False
+def select_radiobox(soup, radiobox_name_or_id):
+    """Selects radiobox of given id or name"""
     radiobox = soup.find('input',
                          {'type': 'radio', '$or': [{'id': radiobox_name_or_id}, {'name': radiobox_name_or_id}]})
 
-    if radiobox:
-        radiobox['checked'] = 'checked'
-        return True
-    return False
+    if not radiobox:
+        raise CheckboxError('Radiobox missing')
+    else:
+        radiobox['checked'] = True
+        return soup
 
 
-def press_button(link, button_value, session_data):
-    session, soup = create_session(link, session_data)
-    if detect_captcha(soup):
-        return False
-    click_button = soup.find('button', {'type': 'button', 'value': button_value})
-    if click_button:
-        form = click_button.find_parent('form')
-        if form:
-            form.submit()
-            return True
-    return False
-
-
-def press_submit(link, submitbutton_value, session_data):
+def submit(link, session_data, submitbutton_value, dropbox_keyword_or_id=None, new_dropdown_option=None,
+           input_keyword_or_id=None, new_entry_value=None, queue_name_or_id=None, new_queue_value=None,
+           checkbox_name_or_id=None, radiobox_name_or_id=None):
     session, soup = create_session(link, session_data)
     if detect_captcha(soup):
         raise SubmitError('Captcha detected while trying to submit')
+
+    if dropbox_keyword_or_id and new_dropdown_option:
+        soup = select_dropdown(soup, dropbox_keyword_or_id, new_dropdown_option)
+    if input_keyword_or_id and new_entry_value:
+        soup = enter_manually(soup, input_keyword_or_id, new_entry_value)
+    if queue_name_or_id and new_queue_value:
+        soup = add_queue(soup, queue_name_or_id, new_queue_value)
+    if checkbox_name_or_id:
+        soup = select_checkbox(soup, checkbox_name_or_id)
+    if radiobox_name_or_id:
+        soup = select_radiobox(soup, radiobox_name_or_id)
+
     submit_button = soup.find('input', {'type': 'submit', 'value': submitbutton_value})
     if not submit_button:
         raise SubmitError('Submit button not found, check the value')

@@ -8,8 +8,7 @@ from decimal import Decimal
 from django.utils import timezone
 from datetime import datetime, time
 from .discord_bot import send_warning
-from .utils import select_dropdow, select_checkbox, select_radiobox, enter_manually, press_button, \
-    press_submit, process_result, DropdownError, SubmitError
+from .utils import submit, SubmitError
 
 
 class GameServer(models.Model):
@@ -204,8 +203,6 @@ class Rule(models.Model):
     conditions = models.ManyToManyField(Condition)
 
     def perform_reaction(self):
-        import time
-
         discord_id = self.conditions.values_list('track_target__player_game_server__player__discord_id',
                                                  flat=True)[0]
         active_session = self.conditions.all()[0].track_target.player_game_server.player.playersession_set.filter(
@@ -220,20 +217,10 @@ class Rule(models.Model):
             choice_value = self.conditions.all()[0].track_target.player_game_server.game_server.name
             link = dict(GameServer.SERVER_URL_ENDPOINTS).get(choice_value)[:-12] + 'assign.cgi'
             try:
-                select_dropdow(
+                submit(
                     link=link,
-                    dropbox_keyword_or_id='SELECT BATTLE SPELL',
-                    new_option='304',
-                    session_data=active_session.session_data
-                )
-                time.sleep(1)
-            except DropdownError as e:
-                send_warning.delay(discord_id, str(e))
-            try:
-                press_submit(
-                    link=link,
-                    submitbutton_value='Assign',
-                    session_data=active_session.session_data
+                    session_data=active_session.session_data,
+                    submitbutton_value='Assign'
                 )
             except SubmitError as e:
                 send_warning.delay(discord_id, str(e))
