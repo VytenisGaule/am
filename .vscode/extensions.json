@@ -9,5 +9,7 @@
         "ms-python.vscode-pylance", 
         "rangav.vscode-thunder-client",
         "ms-azuretools.vscode-docker",
+        "GitHub.copilot"
+        "GitHub.copilot-chat"
     ],
 }

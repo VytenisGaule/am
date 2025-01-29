@@ -1,7 +1,7 @@
 {
-    // "python.defaultInterpreterPath": ".\\virtualEnvironment\\Scripts\\python.exe",
-    // "python.linting.pylintPath": ".\\virtualEnvironment\\Scripts\\pylint.exe",
-    // "python.pythonPath": ".\\virtualEnvironment\\Scripts\\python.exe",
+    // "python.defaultInterpreterPath": ".\\venv\\Scripts\\python.exe",
+    // "python.linting.pylintPath": ".\\venv\\Scripts\\pylint.exe",
+    // "python.pythonPath": ".\\venv\\Scripts\\python.exe",
     "python.defaultInterpreterPath": "./venv/bin/python",
     "python.linting.pylintPath": "./venv/bin/pylint",
     "python.pythonPath": "./venv/bin/python",
