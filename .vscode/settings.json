@@ -2,6 +2,7 @@
     // "python.defaultInterpreterPath": ".\\venv\\Scripts\\python.exe",
     // "python.linting.pylintPath": ".\\venv\\Scripts\\pylint.exe",
     // "python.pythonPath": ".\\venv\\Scripts\\python.exe",
+    "workbench.colorTheme": "Dark+ (default dark)",
     "python.defaultInterpreterPath": "./venv/bin/python",
     "python.linting.pylintPath": "./venv/bin/pylint",
     "python.pythonPath": "./venv/bin/python",
