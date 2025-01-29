@@ -1,0 +1,19 @@
+{
+    // "python.defaultInterpreterPath": ".\\virtualEnvironment\\Scripts\\python.exe",
+    // "python.linting.pylintPath": ".\\virtualEnvironment\\Scripts\\pylint.exe",
+    // "python.pythonPath": ".\\virtualEnvironment\\Scripts\\python.exe",
+    "python.defaultInterpreterPath": "./venv/bin/python",
+    "python.linting.pylintPath": "./venv/bin/pylint",
+    "python.pythonPath": "./venv/bin/python",
+    "python.pipPath": "./venv/bin/pip",
+    "cSpell.language": "en,en-GB",
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--load-plugins=pylint_django",
+        "--django-settings-module=core.settings",
+    ],
+    "python.linting.enabled": true,
+    "cSpell.words": [
+        "forestificate",
+    ],
+}

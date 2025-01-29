@@ -1,0 +1,13 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.pylint",
+        "bradlc.vscode-tailwindcss",
+        "streetsidesoftware.code-spell-checker",
+        "mikestead.dotenv",
+        "GitHub.vscode-pull-request-github",
+        "ms-python.vscode-pylance", 
+        "rangav.vscode-thunder-client",
+        "ms-azuretools.vscode-docker",
+    ],
+}
