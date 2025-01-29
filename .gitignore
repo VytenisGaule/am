@@ -1,0 +1,13 @@
+/venv/
+env
+/static/
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__
+.env
+media
+.DS_Store
+locale
+db.sqlite3
