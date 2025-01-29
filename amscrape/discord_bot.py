@@ -1,5 +1,5 @@
 from discord_webhook import DiscordWebhook
-from am.secret import DISCORD_WEBHOOK_URL
+from am.settings import DISCORD_WEBHOOK_URL
 from celery import shared_task
 
 

@@ -2,6 +2,13 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
+sys.dont_write_bytecode = True
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join("env", "web_local.env"))
+except:
+    print("DotEnv din't load environment vars. Expect variuos fuckups") 
 
 
 def main():

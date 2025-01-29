@@ -1,0 +1,204 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Docker: ComposeDevStack",
+            "type": "shell",
+            "command": "docker-compose",
+            "args": [
+                "up",
+                "--remove-orphans",
+                "-d",
+                "--build",
+                "db",
+                "prometheus",
+                "loki",
+                "grafana",
+                "redis",
+                "rq"
+            ]
+        },
+        {
+            "label": "Docker: Pruna",
+            "type": "shell",
+            "command": "docker",
+            "args": [
+                "system",
+                "prune",
+                "-a",
+                "-f"
+            ]
+        },
+        {
+            "label": "Add user to docker group",
+            "type": "shell",
+            "command": "sudo groupadd docker; sudo usermod -aG docker $USER;"
+        },
+        {
+            "label": "Upgrade node",
+            "type": "shell",
+            "command": "sudo npm cache clean -f; sudo npm install -g n; sudo n stable"
+        },
+        {
+            "label": "Docker stop all",
+            "type": "shell",
+            "command": "docker stop $(docker ps -a -q)"
+        },
+        {
+            "label": "Docker remove all",
+            "type": "shell",
+            "command": "docker stop $(docker ps -a -q)"
+        },
+        {
+            "label": "Tailwind: Start Unix",
+            "type": "shell",
+            "command": "npm run start --prefix theme/static_src",
+            "problemMatcher": []
+        },
+        {
+            "label": "Configure Git",
+            "type": "shell",
+            "command": "git config --global user.name '${input:userName}'; git config --global user.email '${input:userEmail}'",
+            "problemMatcher": []
+        },
+        {
+            "label": "Remove ignored files from git",
+            "type": "shell",
+            "command": "git rm -r --cached .; git add .;git commit -m 'Drop files from .gitignore'",
+            "problemMatcher": []
+        },
+        {
+            "label": "Clear cache",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "clearcache"
+            ]
+        },
+        {
+            "label": "Tailwind: Build Unix",
+            "type": "shell",
+            "command": "npm run build --prefix theme/static_src"
+        },
+        {
+            "label": "Tailwind: init Unix",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "tailwind",
+                "init"
+            ]
+        },
+        {
+            "label": "Tailwind: Install Unix",
+            "type": "shell",
+            "command": "npm install --prefix theme/static_src",
+            "dependsOn": [
+                "Upgrade node"
+            ]
+        },
+        {
+            "label": "Fix docker permissions Unix",
+            "type": "shell",
+            "command": "sudo systemctl restart docker.socket; sudo systemctl restart docker; sudo chmod 777 /var/run/docker.sock; "
+        },
+        {
+            "label": "Venv create",
+            "type": "shell",
+            "command": "python3 -m venv virtualEnvironment"
+        },
+        {
+            "label": "Venv install",
+            "type": "shell",
+            "command": "${config:python.pipPath}",
+            "args": [
+                "install",
+                "-r",
+                "requirements.txt"
+            ],
+            "dependsOn": "Venv activate"
+        },
+        {
+            "label": "Venv activate",
+            "type": "shell",
+            "command": "source ./virtualEnvironment/bin/activate"
+        },
+        {
+            "label": "Translations_Collect",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "makemessages",
+                "-l",
+                "lt",
+                "--ignore",
+                "site-packages"
+            ]
+        },
+        {
+            "label": "Translate",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "compilemessages",
+                "-l",
+                "lt",
+                "--ignore",
+                "site-packages"
+            ],
+            "dependsOn": "Tranlsations_Collect"
+        },
+        {
+            "label": "Make Migrations",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "makemigrations"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "Migrate",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "migrate"
+            ],
+            "dependsOn": "Make Migrations"
+        },
+        {
+            "label": "CollectStatic",
+            "type": "shell",
+            "command": "${config:python.pythonPath}",
+            "args": [
+                "manage.py",
+                "collectstatic",
+                "--noinput",
+                "--clear",
+                "--no-post-process"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "userName",
+            "description": "Git user name:",
+            "default": "John Snow",
+            "type": "promptString"
+        },
+        {
+            "id": "userEmail",
+            "description": "Git user email:",
+            "default": "john@snow.com",
+            "type": "promptString"
+        },
+    ]
+}
